@@ -5,7 +5,10 @@ var mongoose = require('mongoose'),
 
 var RestSchema = new Schema({
   name: String,
-  info: String,
+  lastRested: Date,
+  health: Number,
+  fitness: Number,
+  age: Number,
   active: Boolean
 });
 
