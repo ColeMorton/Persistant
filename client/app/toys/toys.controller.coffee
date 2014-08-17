@@ -3,49 +3,82 @@
 angular.module 'persistantApp'
 .controller 'ToysCtrl', ($scope, $http, socket, $timeout) ->
   $scope.tricker = {}
-  $scope.isResting = false;
+  $scope.isResting = false
+  $scope.health = 0
+  $scope.nextHealthPointIn = 0
+  seconds = 0
+
+  RECHARGE_TIME = 5
+  MINUTE = 60000
+
+  $scope.run = ->
+    return if getHealth() < 11
+    $scope.tricker.totalHealthUsed += 10
+    updateTricker()
+
+  getHealth = ->
+    return $scope.tricker.totalHealthGained - $scope.tricker.totalHealthUsed
+
+  healthIncrementLength = ->
+    return (RECHARGE_TIME * MINUTE) / 100
+
+  refresh = ->
+    updateNextHealthPointIn()
+    return if getHealth() + 1 > 100
+
+    $scope.tricker.totalHealthGained += 1
+    $scope.tricker.lastRested = moment()
+    updateTricker()
+    $timeout(refresh, healthIncrementLength())
+
+  getOfflineHealth = ->
+    duration = moment().diff($scope.tricker.lastRested)
+    return parseInt(duration / healthIncrementLength())
+
+  updateNextHealthPointIn = ->
+    $scope.nextHealthPointIn = (healthIncrementLength() / 1000) + 1
+
+  addOfftimeTime = ->
+    duration = moment().diff($scope.tricker.lastRested)
+    if (getHealth() + getOfflineHealth() > 100)
+      increase = $scope.tricker.totalHealthGained - 100
+      $scope.tricker.totalHealthGained += increase
+    else
+      $scope.tricker.totalHealthGained += getOfflineHealth()
+
+    updateTricker()
+
+  updateTricker = ->
+    $scope.health = getHealth()
+    $scope.tricker.lastRested = moment()
+    $http.put '/api/rests/' + $scope.tricker._id, $scope.tricker
+
+  ticker = ->
+    seconds += 1
+    $scope.nextHealthPointIn -= 1
+    $scope.nextHealthPointIn = 0 if $scope.nextHealthPointIn < 0
+    myTicker = $timeout(ticker, MINUTE / 60)
+
+  reset = ->
+    $http.get('/api/rests/last').success (trickers) ->
+      console.log trickers[0]
+      $scope.tricker = trickers[0]
+      $scope.tricker.lastRested = moment()
+      $scope.tricker.totalHealthGained = 0
+      $scope.tricker.totalHealthUsed = 0
+      $http.put '/api/rests/' + $scope.tricker._id, $scope.tricker
+
+  # reset()
 
   $http.get('/api/rests/last').success (trickers) ->
     console.log trickers[0]
     $scope.tricker = trickers[0]
-    refresh();
 
-    if $scope.tricker.lastRested != null
-      duration = getDuration $scope.tricker.lastRested
-      recharge duration
+    addOfftimeTime();
 
-      $scope.tricker.lastRested = null
-      $http.put '/api/rests/' + $scope.tricker._id, $scope.tricker
+    $scope.health = getHealth()
+    $scope.healthPointRefreshTime = healthIncrementLength() / 1000
+    updateNextHealthPointIn()
 
-  $scope.rest = ->
-    $scope.tricker.lastRested = moment()
-    $http.put '/api/rests/' + $scope.tricker._id, $scope.tricker
-    $scope.isResting = true
-
-  $scope.run = ->
-    updateHealth $scope.tricker.health -= 10
-
-  getDuration = (lastRested) ->
-    result = moment().diff(lastRested) / 60000
-    if result < 1
-      return 0
-    else
-      return parseInt(result)
-
-  recharge = (duration) ->
-    # 7 hours = 420
-    health = $scope.tricker.health
-    health += duration / 45 * 100
-    updateHealth health
-
-  updateHealth = (health) ->
-    health = 1 if health  < 1
-    health = 100 if health > 100
-
-    $scope.tricker.health = parseInt(health)
-    $http.put '/api/rests/' + $scope.tricker._id, $scope.tricker
-
-  refresh = ->
-    recharge 1
-    mytimeout = $timeout(refresh, 60000)
-
+    $timeout(refresh, healthIncrementLength())
+    $timeout(ticker, MINUTE / 60)

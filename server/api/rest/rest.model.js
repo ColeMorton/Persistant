@@ -9,6 +9,8 @@ var RestSchema = new Schema({
   health: Number,
   fitness: Number,
   age: Number,
+  totalHealthGained: Number,
+  totalHealthUsed: Number,
   active: Boolean
 });
 

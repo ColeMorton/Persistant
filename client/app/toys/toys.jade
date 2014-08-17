@@ -11,12 +11,13 @@ div(ng-include='"components/navbar/navbar.html"')
     .col-md-12
       | Fitness: {{tricker.fitness}}
     .col-md-12
-      | Health: {{tricker.health}}
+      | Health: {{health}}
+    .col-md-12
+      | Next health point in: {{nextHealthPointIn}}
+    .col-md-12
+      | Health point refresh time: {{healthPointRefreshTime}}
+
 
   .row(ng-class='{hide: isResting}')
     .col-md-12
       button.btn.btn-primary(ng-click='run()') Run
-    br
-    br
-    .col-md-12
-      button.btn.btn-primary(ng-click='rest()') Rest
