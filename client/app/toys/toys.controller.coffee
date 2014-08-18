@@ -11,65 +11,44 @@ angular.module 'persistantApp'
 
   RECHARGE_TIME = 30
   MINUTE = 60000
+  FITNESS_ADDITION = 15
+  FITNESS_REDUCTION = 5
+  MIN_FITNESS = 80
 
   $scope.run = ->
-    return if getHealth() < 11
-    $scope.tricker.totalHealthUsed += 10
+    return if getHealth() < 100
+    $scope.tricker.totalHealthUsed += 100
+    $scope.tricker.fitness += getFitnessAddition()
+    updatePage()
     updateTricker()
+    console.log "Additional fitness: " + getFitnessAddition()
 
-  getHealth = ->
-    return $scope.tricker.totalHealthGained - $scope.tricker.totalHealthUsed
+  start = ->
+    $http.get('/api/rests/last').success (trickers) ->
+      console.log trickers[0]
+      $scope.tricker = trickers[0]
 
-  isHealthFull = ->
-    getHealth() == $scope.tricker.fitness
+      updateFitnessLoss()
+      addOfftimeTime()
 
-  healthIncrementLength = ->
-    return (RECHARGE_TIME * MINUTE) / $scope.tricker.fitness
+      updatePage()
+      $scope.healthPointRefreshTime = parseInt(healthIncrementLength() / 1000)
+      updateNextHealthPointIn()
 
-  refresh = ->
-    updateNextHealthPointIn()
-    $timeout(refresh, healthIncrementLength())
-    return if isHealthFull()
+      $timeout(incrementHealth, healthIncrementLength())
+      $timeout(minuteTicker, MINUTE)
+      $timeout(secondTicker, MINUTE / 60)
 
-    $scope.tricker.totalHealthGained += 1
-    $scope.tricker.lastRested = moment()
-    updateTricker()
-
-  getOfflineHealth = ->
-    duration = moment().diff($scope.tricker.lastRested)
-    return parseInt(duration / healthIncrementLength())
-
-  updateNextHealthPointIn = ->
-    if isHealthFull()
-      $scope.nextHealthPointIn = 0
-    else
-      $scope.nextHealthPointIn = parseInt((healthIncrementLength() / 1000) + 1)
-
-  updateFitnessLoss = ->
-    nextFitnessLoss = moment($scope.tricker.fitnessLossDate).add('days', 1)
-    if (moment().isAfter(nextFitnessLoss))
-      console.log "Drop fitness"
-
-      if $scope.tricker.fitness >= 52
-        $scope.tricker.fitness -= 2
-      else if $scope.tricker.fitness >= 51
-        $scope.tricker.fitness -= 1
-
+  reset = ->
+    $http.get('/api/rests/last').success (trickers) ->
+      console.log trickers[0]
+      $scope.tricker = trickers[0]
+      $scope.tricker.totalHealthGained = 50
+      $scope.tricker.totalHealthUsed = 0
+      $scope.tricker.fitness = 100
       $scope.tricker.fitnessLossDate = moment()
-
-  addOfftimeTime = ->
-    duration = moment().diff($scope.tricker.lastRested)
-    if (getHealth() + getOfflineHealth() > $scope.tricker.fitness)
-      $scope.tricker.totalHealthGained = $scope.tricker.totalHealthUsed + $scope.tricker.fitness
-    else
-      $scope.tricker.totalHealthGained += getOfflineHealth()
-
-    updateTricker()
-
-  updateTricker = ->
-    $scope.health = getHealth()
-    $scope.tricker.lastRested = moment()
-    $http.put '/api/rests/' + $scope.tricker._id, $scope.tricker
+      updatePage()
+      updateTricker()
 
   minuteTicker = ->
     minutes += 1
@@ -83,31 +62,70 @@ angular.module 'persistantApp'
     mySecondTicker = $timeout(secondTicker, MINUTE / 60)
     console.log seconds
 
-  reset = ->
-    $http.get('/api/rests/last').success (trickers) ->
-      console.log trickers[0]
-      $scope.tricker = trickers[0]
-      $scope.tricker.lastRested = moment()
-      $scope.tricker.totalHealthGained = 0
-      $scope.tricker.totalHealthUsed = 0
-      $scope.tricker.fitness = 100
+  isHealthFull = ->
+    getHealth() == $scope.tricker.fitness
+
+  healthIncrementLength = ->
+    return (RECHARGE_TIME * MINUTE) / $scope.tricker.fitness
+
+  incrementHealth = ->
+    updateNextHealthPointIn()
+    $timeout(incrementHealth, healthIncrementLength())
+    return if isHealthFull()
+
+    $scope.tricker.totalHealthGained += 1
+    updatePage()
+    updateTricker()
+
+  updateNextHealthPointIn = ->
+    if isHealthFull()
+      $scope.nextHealthPointIn = 0
+    else
+      $scope.nextHealthPointIn = parseInt((healthIncrementLength() / 1000) + 1)
+
+  updateFitnessLoss = ->
+    nextFitnessLoss = moment($scope.tricker.fitnessLossDate).add('minutes', 1)
+    if (moment().isAfter(nextFitnessLoss))
+      $scope.tricker.fitness -= getFitnessReduction()
+      $scope.tricker.fitness = MIN_FITNESS if $scope.tricker.fitness < MIN_FITNESS
       $scope.tricker.fitnessLossDate = moment()
-      $http.put '/api/rests/' + $scope.tricker._id, $scope.tricker
 
-  start = ->
-    $http.get('/api/rests/last').success (trickers) ->
-      console.log trickers[0]
-      $scope.tricker = trickers[0]
+      if getHealth() > $scope.tricker.fitness
+        healthReduction = getHealth() - $scope.tricker.fitness
+        $scope.tricker.totalHealthGained -= healthReduction
+        updatePage()
 
-      addOfftimeTime();
+      updateTricker()
 
-      $scope.health = getHealth()
-      $scope.healthPointRefreshTime = parseInt(healthIncrementLength() / 1000)
-      updateNextHealthPointIn()
+  addOfftimeTime = ->
+    if (getHealth() + getOfflineHealth() > $scope.tricker.fitness)
+      $scope.tricker.totalHealthGained = $scope.tricker.totalHealthUsed + $scope.tricker.fitness
+    else
+      $scope.tricker.totalHealthGained += getOfflineHealth()
 
-      $timeout(refresh, healthIncrementLength())
-      $timeout(minuteTicker, MINUTE)
-      $timeout(secondTicker, MINUTE / 60)
+    updateTricker()
+
+  updateTricker = ->
+    $scope.tricker.lastModified = moment()
+    $http.put '/api/rests/' + $scope.tricker._id, $scope.tricker
+
+  updatePage = ->
+    $scope.health = getHealth()
+
+  getOfflineHealth = ->
+    duration = moment().diff($scope.tricker.lastModified)
+    return parseInt(duration / healthIncrementLength())
+
+  getHealth = ->
+    return $scope.tricker.totalHealthGained - $scope.tricker.totalHealthUsed
+
+  getFitnessAddition = ->
+    result = parseInt((FITNESS_ADDITION / $scope.tricker.fitness) * 100)
+    result = FITNESS_ADDITION if result > FITNESS_ADDITION
+    return result
+
+  getFitnessReduction = ->
+    return parseInt((FITNESS_REDUCTION / $scope.tricker.fitness) * 100)
 
   # reset()
   start()
