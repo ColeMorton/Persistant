@@ -8,6 +8,7 @@ var RestSchema = new Schema({
   lastRested: Date,
   health: Number,
   fitness: Number,
+  fitnessLossDate: Date,
   age: Number,
   totalHealthGained: Number,
   totalHealthUsed: Number,
