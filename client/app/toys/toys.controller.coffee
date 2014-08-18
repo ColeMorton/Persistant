@@ -8,7 +8,7 @@ angular.module 'persistantApp'
   $scope.nextHealthPointIn = 0
   seconds = 0
 
-  RECHARGE_TIME = 5
+  RECHARGE_TIME = 60
   MINUTE = 60000
 
   $scope.run = ->
@@ -19,30 +19,35 @@ angular.module 'persistantApp'
   getHealth = ->
     return $scope.tricker.totalHealthGained - $scope.tricker.totalHealthUsed
 
+  isHealthFull = ->
+    getHealth() == 100
+
   healthIncrementLength = ->
     return (RECHARGE_TIME * MINUTE) / 100
 
   refresh = ->
     updateNextHealthPointIn()
-    return if getHealth() + 1 > 100
+    $timeout(refresh, healthIncrementLength())
+    return if isHealthFull()
 
     $scope.tricker.totalHealthGained += 1
     $scope.tricker.lastRested = moment()
     updateTricker()
-    $timeout(refresh, healthIncrementLength())
 
   getOfflineHealth = ->
     duration = moment().diff($scope.tricker.lastRested)
     return parseInt(duration / healthIncrementLength())
 
   updateNextHealthPointIn = ->
-    $scope.nextHealthPointIn = (healthIncrementLength() / 1000) + 1
+    if isHealthFull()
+      $scope.nextHealthPointIn = 0
+    else
+      $scope.nextHealthPointIn = (healthIncrementLength() / 1000) + 1
 
   addOfftimeTime = ->
     duration = moment().diff($scope.tricker.lastRested)
     if (getHealth() + getOfflineHealth() > 100)
-      increase = $scope.tricker.totalHealthGained - 100
-      $scope.tricker.totalHealthGained += increase
+      $scope.tricker.totalHealthGained = $scope.tricker.totalHealthUsed + 100
     else
       $scope.tricker.totalHealthGained += getOfflineHealth()
 
