@@ -2,10 +2,6 @@ div(ng-include='"components/navbar/navbar.html"')
 
 .container
   .row
-    .col-lg-12
-      h1.page-header Tricker
-
-  .row
     .col-md-12
       | Age: {{tricker.age}}
     .col-md-12
@@ -19,5 +15,10 @@ div(ng-include='"components/navbar/navbar.html"')
 
 
   .row(ng-class='{hide: isResting}')
+
+    br
+    .col-md-12
+      | Percentage:
+      input(ng-model='runSpend', type='text')
     .col-md-12
       button.btn.btn-primary(ng-click='run()') Run

@@ -6,6 +6,7 @@ angular.module 'persistantApp'
   $scope.isResting = false
   $scope.health = 0
   $scope.nextHealthPointIn = 0
+  $scope.runSpend = 20
   seconds = 0
   minutes = 0
 
@@ -16,8 +17,8 @@ angular.module 'persistantApp'
   MIN_FITNESS = 80
 
   $scope.run = ->
-    return if getHealth() < 100
-    $scope.tricker.totalHealthUsed += 100
+    return if getHealth() < 10
+    $scope.tricker.totalHealthUsed += getRunSpenditure()
     $scope.tricker.fitness += getFitnessAddition()
     updatePage()
     updateTricker()
@@ -60,7 +61,7 @@ angular.module 'persistantApp'
     $scope.nextHealthPointIn -= 1
     $scope.nextHealthPointIn = 0 if $scope.nextHealthPointIn < 0
     mySecondTicker = $timeout(secondTicker, MINUTE / 60)
-    console.log seconds
+    # console.log seconds
 
   isHealthFull = ->
     getHealth() == $scope.tricker.fitness
@@ -120,12 +121,17 @@ angular.module 'persistantApp'
     return $scope.tricker.totalHealthGained - $scope.tricker.totalHealthUsed
 
   getFitnessAddition = ->
-    result = parseInt((FITNESS_ADDITION / $scope.tricker.fitness) * 100)
+    spend = $scope.runSpend / 6
+    result = parseInt((spend / 100) * $scope.tricker.fitness)
     result = FITNESS_ADDITION if result > FITNESS_ADDITION
     return result
 
   getFitnessReduction = ->
     return parseInt((FITNESS_REDUCTION / $scope.tricker.fitness) * 100)
+
+  getRunSpenditure = ->
+    $scope.runSpend = parseInt($scope.runSpend)
+    return parseInt(($scope.runSpend / 100) * getHealth())
 
   # reset()
   start()
