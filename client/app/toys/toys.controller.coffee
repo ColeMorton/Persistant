@@ -1,7 +1,8 @@
 'use strict'
 
 angular.module 'persistantApp'
-.controller 'ToysCtrl', ($scope, $http, socket, $timeout) ->
+.controller 'ToysCtrl', ($scope, $http, socket, $timeout, healthFactory) ->
+  health = healthFactory
   $scope.tricker = {}
   $scope.isResting = false
   $scope.health = 0
@@ -17,26 +18,29 @@ angular.module 'persistantApp'
   MIN_FITNESS = 80
 
   $scope.run = ->
-    return if getHealth() < 10
+    return if health.getHealth() < 10
     $scope.tricker.totalHealthUsed += getRunSpenditure()
     $scope.tricker.fitness += getFitnessAddition()
     updatePage()
     updateTricker()
-    console.log "Additional fitness: " + getFitnessAddition()
+    # console.log "Additional fitness: " + getFitnessAddition()
+
+  healthUpdate = (health) ->
+    # console.log "healthUpdate: " + health
+    $scope.health = health
+
+  nextHealthPointInUpdate = (time) ->
+    # console.log time
+    $scope.nextHealthPointIn = time
 
   start = ->
     $http.get('/api/rests/last').success (trickers) ->
       console.log trickers[0]
       $scope.tricker = trickers[0]
-
-      addOfftimeTime()
+      health.init($scope.tricker, healthUpdate, nextHealthPointInUpdate)
       updateFitnessLoss()
-
       updatePage()
-      $scope.healthPointRefreshTime = parseInt(healthIncrementLength() / 1000)
-      updateNextHealthPointIn()
-
-      $timeout(incrementHealth, healthIncrementLength())
+      $scope.healthPointRefreshTime = health.getHealthPointRefreshTime()
       $timeout(minuteTicker, MINUTE)
       $timeout(secondTicker, MINUTE / 60)
 
@@ -44,6 +48,7 @@ angular.module 'persistantApp'
     $http.get('/api/rests/last').success (trickers) ->
       console.log trickers[0]
       $scope.tricker = trickers[0]
+      health.init($scope.tricker, healthUpdate, nextHealthPointInUpdate)
       $scope.tricker.totalHealthGained = 50
       $scope.tricker.totalHealthUsed = 0
       $scope.tricker.fitness = 100
@@ -63,27 +68,6 @@ angular.module 'persistantApp'
     mySecondTicker = $timeout(secondTicker, MINUTE / 60)
     # console.log seconds
 
-  isHealthFull = ->
-    getHealth() == $scope.tricker.fitness
-
-  healthIncrementLength = ->
-    return (RECHARGE_TIME * MINUTE) / $scope.tricker.fitness
-
-  incrementHealth = ->
-    updateNextHealthPointIn()
-    $timeout(incrementHealth, healthIncrementLength())
-    return if isHealthFull()
-
-    $scope.tricker.totalHealthGained += 1
-    updatePage()
-    updateTricker()
-
-  updateNextHealthPointIn = ->
-    if isHealthFull()
-      $scope.nextHealthPointIn = 0
-    else
-      $scope.nextHealthPointIn = parseInt((healthIncrementLength() / 1000) + 1)
-
   updateFitnessLoss = ->
     nextFitnessLoss = moment($scope.tricker.fitnessLossDate).add('hours', 1)
     if (moment().isAfter(nextFitnessLoss))
@@ -91,20 +75,10 @@ angular.module 'persistantApp'
       $scope.tricker.fitness = MIN_FITNESS if $scope.tricker.fitness < MIN_FITNESS
       $scope.tricker.fitnessLossDate = moment()
 
-      if getHealth() > $scope.tricker.fitness
-        healthReduction = getHealth() - $scope.tricker.fitness
+      if health.getHealth() > $scope.tricker.fitness
+        healthReduction = health.getHealth() - $scope.tricker.fitness
         $scope.tricker.totalHealthGained -= healthReduction
         updatePage()
-
-      updateTricker()
-
-  addOfftimeTime = ->
-    offlineTime = getOfflineHealth()
-    console.log "getOfflineHealth: " + offlineTime
-    if (getHealth() + offlineTime > $scope.tricker.fitness)
-      $scope.tricker.totalHealthGained = $scope.tricker.totalHealthUsed + $scope.tricker.fitness
-    else
-      $scope.tricker.totalHealthGained += offlineTime
 
     updateTricker()
 
@@ -113,16 +87,7 @@ angular.module 'persistantApp'
     $http.put '/api/rests/' + $scope.tricker._id, $scope.tricker
 
   updatePage = ->
-    $scope.health = getHealth()
-
-  getOfflineHealth = ->
-    console.log "Last modified: " + $scope.tricker.lastModified
-    console.log "Now: " + moment()
-    duration = moment().diff($scope.tricker.lastModified)
-    return parseInt(duration / healthIncrementLength())
-
-  getHealth = ->
-    return $scope.tricker.totalHealthGained - $scope.tricker.totalHealthUsed
+    $scope.health = health.getHealth()
 
   getFitnessAddition = ->
     spend = $scope.runSpend / 6
@@ -135,7 +100,7 @@ angular.module 'persistantApp'
 
   getRunSpenditure = ->
     $scope.runSpend = parseInt($scope.runSpend)
-    return parseInt(($scope.runSpend / 100) * getHealth())
+    return parseInt(($scope.runSpend / 100) * health.getHealth())
 
   # reset()
   start()
