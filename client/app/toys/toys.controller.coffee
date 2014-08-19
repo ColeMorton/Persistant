@@ -1,7 +1,8 @@
 'use strict'
 
 angular.module 'persistantApp'
-.controller 'ToysCtrl', ($scope, $http, socket, $timeout, healthFactory) ->
+.controller 'ToysCtrl', ($scope, $http, socket, $timeout, trickerFactory, healthFactory) ->
+  tricker = trickerFactory
   health = healthFactory
   $scope.tricker = {}
   $scope.isResting = false
@@ -37,6 +38,7 @@ angular.module 'persistantApp'
     $http.get('/api/rests/last').success (trickers) ->
       console.log trickers[0]
       $scope.tricker = trickers[0]
+      tricker.init()
       health.init($scope.tricker, healthUpdate, nextHealthPointInUpdate)
       updateFitnessLoss()
       updatePage()
@@ -48,6 +50,7 @@ angular.module 'persistantApp'
     $http.get('/api/rests/last').success (trickers) ->
       console.log trickers[0]
       $scope.tricker = trickers[0]
+      tricker.init()
       health.init($scope.tricker, healthUpdate, nextHealthPointInUpdate)
       $scope.tricker.totalHealthGained = 50
       $scope.tricker.totalHealthUsed = 0
