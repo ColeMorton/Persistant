@@ -4,7 +4,8 @@ angular.module 'persistantApp'
 .controller 'NavbarCtrl', ($scope, $location, Auth) ->
   $scope.menu = [
     {title: 'Home', link: '/'}
-    {title: 'Tricker', link: '/toys'}
+    {title: 'Toys', link: '/toys'}
+    {title: 'Tricker', link: '/tricker'}
   ]
   $scope.isCollapsed = true
   $scope.isLoggedIn = Auth.isLoggedIn

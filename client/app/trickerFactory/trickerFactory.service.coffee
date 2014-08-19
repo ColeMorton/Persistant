@@ -1,18 +1,9 @@
 'use strict'
 
 angular.module 'persistantApp'
-.factory 'trickerFactory', ($http, $timeout) ->
+.factory 'trickerFactory', ($http, $timeout, healthierFactory) ->
+  class Tricker
 
-  # Service logic
-  # ...
-  meaningOfLife = 42
-
-  someMethod = ->
-    meaningOfLife
-
-  init = ->
-    console.log "Tricker init"
-
-  # Public API here
-  someMethod: someMethod
-  init: init
+    constructor: (_tricker_) ->
+      @model = _tricker_
+      health = new healthierFactory(@model)
