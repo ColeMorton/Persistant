@@ -11,7 +11,7 @@ angular.module 'persistantApp'
     secondTicker()
 
   secondTicker = ->
-    console.log $scope.tricker.model.second
+    # console.log $scope.tricker.model.second
     mySecondTicker = $timeout(secondTicker, 1000)
 
   $scope.$on '$destroy', ->

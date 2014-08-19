@@ -1,1 +1,14 @@
 div(ng-include='"components/navbar/navbar.html"')
+
+.container
+  .row
+    .col-md-12
+      | Age: {{tricker.model.age}}
+    .col-md-12
+      | Fitness: {{tricker.model.fitness}}
+    .col-md-12
+      | Health: {{tricker.model.health}}
+    .col-md-12
+      | Next health point in: {{tricker.model.nextHealthPointIn}}
+    .col-md-12
+      | Health point refresh time: {{tricker.model.healthIncrementLength}}
