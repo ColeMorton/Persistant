@@ -29,8 +29,8 @@ angular.module 'persistantApp'
       console.log trickers[0]
       $scope.tricker = trickers[0]
 
-      updateFitnessLoss()
       addOfftimeTime()
+      updateFitnessLoss()
 
       updatePage()
       $scope.healthPointRefreshTime = parseInt(healthIncrementLength() / 1000)
@@ -85,7 +85,7 @@ angular.module 'persistantApp'
       $scope.nextHealthPointIn = parseInt((healthIncrementLength() / 1000) + 1)
 
   updateFitnessLoss = ->
-    nextFitnessLoss = moment($scope.tricker.fitnessLossDate).add('minutes', 1)
+    nextFitnessLoss = moment($scope.tricker.fitnessLossDate).add('hours', 1)
     if (moment().isAfter(nextFitnessLoss))
       $scope.tricker.fitness -= getFitnessReduction()
       $scope.tricker.fitness = MIN_FITNESS if $scope.tricker.fitness < MIN_FITNESS
@@ -99,10 +99,12 @@ angular.module 'persistantApp'
       updateTricker()
 
   addOfftimeTime = ->
-    if (getHealth() + getOfflineHealth() > $scope.tricker.fitness)
+    offlineTime = getOfflineHealth()
+    console.log "getOfflineHealth: " + offlineTime
+    if (getHealth() + offlineTime > $scope.tricker.fitness)
       $scope.tricker.totalHealthGained = $scope.tricker.totalHealthUsed + $scope.tricker.fitness
     else
-      $scope.tricker.totalHealthGained += getOfflineHealth()
+      $scope.tricker.totalHealthGained += offlineTime
 
     updateTricker()
 
@@ -114,6 +116,8 @@ angular.module 'persistantApp'
     $scope.health = getHealth()
 
   getOfflineHealth = ->
+    console.log "Last modified: " + $scope.tricker.lastModified
+    console.log "Now: " + moment()
     duration = moment().diff($scope.tricker.lastModified)
     return parseInt(duration / healthIncrementLength())
 
