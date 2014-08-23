@@ -66,7 +66,6 @@ angular.module 'persistantApp'
     $scope.nextHealthPointIn -= 1
     $scope.nextHealthPointIn = 0 if $scope.nextHealthPointIn < 0
     mySecondTicker = $timeout(secondTicker, MINUTE / 60)
-    # console.log seconds
 
   updateFitnessLoss = ->
     nextFitnessLoss = moment($scope.tricker.fitnessLossDate).add('hours', 1)

@@ -1,14 +1,23 @@
 'use strict'
 
 angular.module 'persistantApp'
-.factory 'trickerFactory', ($http, $timeout, healthierFactory) ->
+.factory 'trickerFactory', ($http, $timeout, healthierFactory, actionFactory) ->
   class Tricker
 
     save = ->
       @lastModified = moment()
       $http.put '/api/rests/' + @_id, this
 
-    constructor: (_tricker_) ->
-      @model = _tricker_
+    reset = ->
+      this.totalHealthGained = 50
+      this.totalHealthUsed = 0
+      this.fitness = 100
+      this.fitnessLossDate = moment()
+      this.save()
+
+    constructor: (tricker) ->
+      @model = tricker
       @model.save = save
-      health = new healthierFactory(@model)
+      @model.reset = reset
+      @health = new healthierFactory(@model)
+      @action = new actionFactory(@model, @health)

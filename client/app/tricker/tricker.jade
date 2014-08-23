@@ -12,3 +12,15 @@ div(ng-include='"components/navbar/navbar.html"')
       | Next health point in: {{tricker.model.nextHealthPointIn}}
     .col-md-12
       | Health point refresh time: {{tricker.model.healthIncrementLength}}
+
+  hr
+
+  .row
+    .col-md-12
+      button.btn.btn-primary(ng-click='run()') Run
+
+  hr
+
+  .row
+    .col-md-12
+      button.btn.btn-primary(ng-click='reset()') Reset
