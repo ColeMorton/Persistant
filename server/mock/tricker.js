@@ -1,0 +1,1 @@
+var mockTrickers = [{"_id":"53f872d4a3b5a15dcacfef39","totalHealthGained":80,"totalHealthUsed":0,"fitness":100,"fitnessLossDate":"2014-08-23T11:05:55.911Z","lastModified":"2014-08-23T11:11:05.801Z","__v":0,"age":13}]

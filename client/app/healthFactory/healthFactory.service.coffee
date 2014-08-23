@@ -1,83 +1,110 @@
 'use strict'
 
 angular.module 'persistantApp'
-.factory 'healthFactory', ($http, $timeout) ->
+.service 'healthFactory', ($timeout) ->
+  class Health
 
-  # Service logic
-  # ...
-  RECHARGE_TIME = 30
-  MINUTE = 60000
+    RECHARGE_TIME = 2
+    MINUTE = 60000
+    SECOND = 1000
+    FITNESS_ADDITION = 15
+    FITNESS_REDUCTION = 5
+    MIN_FITNESS = 80
 
-  meaningOfLife = 42
-  tricker = null
-  healthUpdated = null
-  nextHealthPointIn = 0
-  nextHealthPointInUpdate = null
+    mySecondTicker = null
+    myMinuteTicker = null
+    second = 0
+    minute = 0
 
-  someMethod = ->
-    meaningOfLife
+    constructor: (tricker) ->
+      @model = tricker
+      @updateHealth()
+      @model.healthIncrementLength = @getHealthIncrementLength()
+      @model.nextHealthPointIn = @model.healthIncrementLength
+      @addOfflineHealth()
+      mySecondTicker = $timeout(@secondTicker, SECOND)
+      myMinuteTicker = $timeout(@minuteTicker, MINUTE)
 
-  init = (_tricker_, _healthUpdated_, _nextHealthPointInUpdate_) ->
-    tricker = _tricker_
-    healthUpdated = _healthUpdated_
-    nextHealthPointInUpdate = _nextHealthPointInUpdate_
-    addOfftimeTime()
-    incrementHealth()
+    secondTicker: =>
+      second += 1
+      @updateHealthIncrementCountdown()
+      @updateFitnessLoss()
+      mySecondTicker = $timeout(@secondTicker, SECOND)
 
-  getHealthPointRefreshTime = ->
-    parseInt(healthIncrementLength() / 1000)
+    minuteTicker: =>
+      minute += 1
+      myMinuteTicker = $timeout(@myMinuteTicker, MINUTE)
 
-  addOfftimeTime = ->
-    offlineTime = getOfflineHealth()
-    # console.log "getOfflineHealth: " + offlineTime
-    if (getHealth() + offlineTime > tricker.fitness)
-      tricker.totalHealthGained = tricker.totalHealthUsed + tricker.fitness
-    else
-      tricker.totalHealthGained += offlineTime
+    updateHealthIncrementCountdown: =>
+      if @isHealthFull()
+        @model.nextHealthPointIn = 0
+        return
 
-  getOfflineHealth = ->
-    # console.log "Last modified: " + tricker.lastModified
-    # console.log "Now: " + moment()
-    duration = moment().diff(tricker.lastModified)
-    return parseInt(duration / healthIncrementLength())
+      if @model.nextHealthPointIn > 0
+        @model.nextHealthPointIn -= 1
 
-  healthIncrementLength = ->
-    # console.log "healthIncrementLength: " + (RECHARGE_TIME * MINUTE) / tricker.fitness
-    return (RECHARGE_TIME * MINUTE) / tricker.fitness
+      if !@isHealthFull() && @model.nextHealthPointIn == 0
+        @incrementHealth()
+        @model.nextHealthPointIn = @model.healthIncrementLength
 
-  incrementHealth = ->
-    # console.log "incrementHealth"
-    updateNextHealthPointIn()
-    $timeout(incrementHealth, healthIncrementLength())
-    return if isHealthFull()
+    getHealthIncrementLength: =>
+      totalRechargeTimeInSeconds = RECHARGE_TIME * MINUTE
+      pointRechargeTimeInSeconds = totalRechargeTimeInSeconds / @model.fitness
+      parseInt(pointRechargeTimeInSeconds / SECOND)
 
-    tricker.totalHealthGained += 1
-    # updatePage()
-    healthUpdated(getHealth()) if healthUpdated != null
-    updateTricker()
+    incrementHealth: =>
+      @model.totalHealthGained += 1
+      @updateHealth()
 
-  updateNextHealthPointIn = ->
-    if isHealthFull()
-      nextHealthPointIn = 0
-    else
-      nextHealthPointIn = parseInt((healthIncrementLength() / 1000) + 1)
+    addFitness: (fitness) =>
+      fitness = FITNESS_ADDITION if fitness > FITNESS_ADDITION
+      @model.fitness += fitness
 
-    # console.log "updateNextHealthPointIn: " + nextHealthPointIn
-    nextHealthPointInUpdate nextHealthPointIn
+    addOfflineHealth: =>
+      offlineTime = @getOfflineTime()
+      if (@model.health + offlineTime > @model.fitness)
+        @model.totalHealthGained = @model.totalHealthUsed + @model.fitness
+      else
+        @model.totalHealthGained += offlineTime
+      @updateHealth
+      @save()
 
-  updateTricker = ->
-    tricker.lastModified = moment()
-    $http.put '/api/rests/' + tricker._id, tricker
+    updateFitnessLoss: ->
+      nextFitnessLoss = moment(@model.fitnessLossDate).add('hours', 1)
+      if (moment().isAfter(nextFitnessLoss))
+        @model.fitness -= @getFitnessReduction()
+        @model.fitness = MIN_FITNESS if @model.fitness < MIN_FITNESS
+        @model.fitnessLossDate = moment()
 
-  getHealth = ->
-    return tricker.totalHealthGained - tricker.totalHealthUsed
+        if @model.health > @model.fitness
+          healthReduction = @model.health - @model.fitness
+          @model.totalHealthGained -= healthReduction
+          @updateHealth()
 
-  isHealthFull = ->
-    return getHealth() == tricker.fitness
+        @save()
 
-  # Public API here
-  someMethod: someMethod
-  init: init
-  getHealthPointRefreshTime: getHealthPointRefreshTime
-  isHealthFull: isHealthFull
-  getHealth: getHealth
+    updateHealth: =>
+      @model.health = @model.totalHealthGained - @model.totalHealthUsed
+
+    isHealthFull: =>
+      @model.health >= @model.fitness
+
+    getOfflineTime: =>
+      duration = moment().diff(@model.lastModified) / SECOND
+      parseInt(duration / @model.healthIncrementLength)
+
+    getFitnessReduction: =>
+      parseInt((FITNESS_REDUCTION / @model.fitness) * 100)
+
+    canSpendHealth: (spend) =>
+      @model.health >= spend
+
+    spendHealth: (spend) =>
+      throw new Error "Cannot spend health" if !@canSpendHealth spend
+      @model.totalHealthUsed += spend
+      @updateHealth()
+      @save()
+
+    save: =>
+      @model.healthModifiedDate = moment()
+      @model.save()
