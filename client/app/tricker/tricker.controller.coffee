@@ -16,6 +16,9 @@ angular.module 'persistantApp'
   $scope.shortRun = ->
     $scope.tricker.action.run(20)
 
+  $scope.warmUp = ->
+    $scope.tricker.action.warmUp()
+
   $scope.reset = ->
     $scope.tricker.model.reset()
 

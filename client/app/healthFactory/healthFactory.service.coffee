@@ -61,6 +61,12 @@ angular.module 'persistantApp'
       fitness = FITNESS_ADDITION if fitness > FITNESS_ADDITION
       @model.fitness += fitness
 
+    addWarmth: (energyUsed) =>
+      warmth =  (energyUsed / @model.fitness) * 100
+      @model.warmth += parseInt warmth
+      @model.warmth = 100 if @model.warmth > 100
+      @saveWarmth()
+
     loseOfflineWarmth: =>
       offlineWarmthLoss = @getOfflineWarmth()
       if (@model.warmth > offlineWarmthLoss)
@@ -126,6 +132,7 @@ angular.module 'persistantApp'
     spendHealth: (spend) =>
       throw new Error "Cannot spend health" if !@canSpendHealth spend
       @model.totalHealthUsed += spend
+      @addWarmth(spend)
       @updateHealth()
       @saveHealth()
 

@@ -9,12 +9,18 @@ angular.module 'persistantApp'
       @health = health
 
     run: (energyPercentage) =>
-      energyAmount = @getRunEnerygyAmount energyPercentage
+      energyAmount = @getEnerygyAmount energyPercentage
       return if !@health.canSpendHealth energyAmount
       @health.spendHealth energyAmount
       @health.addFitness @getFitnessAddition energyPercentage
 
-    getRunEnerygyAmount: (energyPercentage) =>
+    warmUp: =>
+      energyAmount = @getEnerygyAmount 10
+      return if !@health.canSpendHealth energyAmount
+      @health.spendHealth energyAmount
+      @health.addWarmth (energyAmount * 3)
+
+    getEnerygyAmount: (energyPercentage) =>
       parseInt((energyPercentage / 100) * @model.health)
 
     getFitnessAddition: (energyPercentage) =>
