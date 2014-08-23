@@ -14,6 +14,8 @@ angular.module 'persistantApp'
       this.totalHealthUsed = 0
       this.fitness = 100
       this.fitnessLossDate = moment()
+      this.warmth = 50
+      this.warmthModifiedDate = moment()
       this.save()
 
     constructor: (tricker) ->

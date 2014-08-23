@@ -4,7 +4,8 @@ angular.module 'persistantApp'
 .service 'healthFactory', ($timeout) ->
   class Health
 
-    RECHARGE_TIME = 2
+    RECHARGE_TIME = 480
+    WARMTH_DEGEN_TIME = 30
     MINUTE = 60000
     SECOND = 1000
     FITNESS_ADDITION = 15
@@ -19,14 +20,16 @@ angular.module 'persistantApp'
     constructor: (tricker) ->
       @model = tricker
       @updateHealth()
-      @model.healthIncrementLength = @getHealthIncrementLength()
-      @model.nextHealthPointIn = @model.healthIncrementLength
+      @model.healthIncrementLength = @getHealthRegenTime()
+      @model.nextHealthPointIn = @getHealthRegenTime()
+      @loseOfflineWarmth()
       @addOfflineHealth()
       mySecondTicker = $timeout(@secondTicker, SECOND)
       myMinuteTicker = $timeout(@minuteTicker, MINUTE)
 
     secondTicker: =>
       second += 1
+      # @updateWarmthCountdown()
       @updateHealthIncrementCountdown()
       @updateFitnessLoss()
       mySecondTicker = $timeout(@secondTicker, SECOND)
@@ -34,6 +37,9 @@ angular.module 'persistantApp'
     minuteTicker: =>
       minute += 1
       myMinuteTicker = $timeout(@myMinuteTicker, MINUTE)
+
+    updateWarmthCountdown: =>
+      nextWarmthLoss = moment(@model.warmthLossDate).add('hours', 1)
 
     updateHealthIncrementCountdown: =>
       if @isHealthFull()
@@ -45,12 +51,7 @@ angular.module 'persistantApp'
 
       if !@isHealthFull() && @model.nextHealthPointIn == 0
         @incrementHealth()
-        @model.nextHealthPointIn = @model.healthIncrementLength
-
-    getHealthIncrementLength: =>
-      totalRechargeTimeInSeconds = RECHARGE_TIME * MINUTE
-      pointRechargeTimeInSeconds = totalRechargeTimeInSeconds / @model.fitness
-      parseInt(pointRechargeTimeInSeconds / SECOND)
+        @model.nextHealthPointIn = @getHealthRegenTime()
 
     incrementHealth: =>
       @model.totalHealthGained += 1
@@ -60,17 +61,26 @@ angular.module 'persistantApp'
       fitness = FITNESS_ADDITION if fitness > FITNESS_ADDITION
       @model.fitness += fitness
 
+    loseOfflineWarmth: =>
+      offlineWarmthLoss = @getOfflineWarmth()
+      if (@model.warmth > offlineWarmthLoss)
+        @model.warmth -= offlineWarmthLoss
+      else
+        @model.warmth = 0
+      @saveWarmth()
+
     addOfflineHealth: =>
-      offlineTime = @getOfflineTime()
-      if (@model.health + offlineTime > @model.fitness)
+      offlineHealth = @getOfflineHealth()
+      if (@model.health + offlineHealth > @model.fitness)
         @model.totalHealthGained = @model.totalHealthUsed + @model.fitness
       else
-        @model.totalHealthGained += offlineTime
+        @model.totalHealthGained += offlineHealth
+
       @updateHealth
-      @save()
+      @saveHealth()
 
     updateFitnessLoss: ->
-      nextFitnessLoss = moment(@model.fitnessLossDate).add('hours', 1)
+      nextFitnessLoss = moment(@model.fitnessLossDate).add(1, 'hours')
       if (moment().isAfter(nextFitnessLoss))
         @model.fitness -= @getFitnessReduction()
         @model.fitness = MIN_FITNESS if @model.fitness < MIN_FITNESS
@@ -81,7 +91,7 @@ angular.module 'persistantApp'
           @model.totalHealthGained -= healthReduction
           @updateHealth()
 
-        @save()
+        @saveHealth()
 
     updateHealth: =>
       @model.health = @model.totalHealthGained - @model.totalHealthUsed
@@ -89,9 +99,23 @@ angular.module 'persistantApp'
     isHealthFull: =>
       @model.health >= @model.fitness
 
-    getOfflineTime: =>
-      duration = moment().diff(@model.lastModified) / SECOND
-      parseInt(duration / @model.healthIncrementLength)
+    getOfflineHealth: =>
+      duration = moment().diff(@model.healthModifiedDate) / SECOND
+      parseInt(duration / @getHealthRegenTime())
+
+    getOfflineWarmth: =>
+      duration = moment().diff(@model.warmthModifiedDate) / SECOND
+      parseInt(duration / @getWarmthDegenTime())
+
+    getHealthRegenTime: =>
+      totalInSeconds = RECHARGE_TIME * MINUTE
+      pointInSeconds = totalInSeconds / @model.fitness
+      parseInt(pointInSeconds / SECOND)
+
+    getWarmthDegenTime: =>
+      totalInSeconds = WARMTH_DEGEN_TIME * MINUTE
+      pointInSeconds = totalInSeconds / 100
+      parseInt(pointInSeconds / SECOND)
 
     getFitnessReduction: =>
       parseInt((FITNESS_REDUCTION / @model.fitness) * 100)
@@ -103,8 +127,12 @@ angular.module 'persistantApp'
       throw new Error "Cannot spend health" if !@canSpendHealth spend
       @model.totalHealthUsed += spend
       @updateHealth()
-      @save()
+      @saveHealth()
 
-    save: =>
+    saveHealth: =>
       @model.healthModifiedDate = moment()
+      @model.save()
+
+    saveWarmth: =>
+      @model.warmthModifiedDate = moment()
       @model.save()

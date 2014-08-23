@@ -5,19 +5,33 @@ div(ng-include='"components/navbar/navbar.html"')
     .col-md-12
       | Age: {{tricker.model.age}}
     .col-md-12
+      | Warmth: {{tricker.model.warmth}}
+    .col-md-12
       | Fitness: {{tricker.model.fitness}}
     .col-md-12
-      | Health: {{tricker.model.health}}
+      | Energy: {{tricker.model.health}}
     .col-md-12
-      | Next health point in: {{tricker.model.nextHealthPointIn}}
+      | Energy Regeneration in: {{tricker.model.nextHealthPointIn}}
     .col-md-12
-      | Health point refresh time: {{tricker.model.healthIncrementLength}}
+      | Energy Regeneration time: {{tricker.model.healthIncrementLength}}
 
   hr
 
   .row
-    .col-md-12
-      button.btn.btn-primary(ng-click='run()') Run
+    .col-md-2
+      button.btn.btn-primary(ng-click='longRun()') Long Run 90
+
+    .col-md-2
+      button.btn.btn-primary(ng-click='mediumRun()') Medium Run 40
+
+    .col-md-2
+      button.btn.btn-primary(ng-click='shortRun()') Short Run 20
+
+  hr
+
+  .row
+    .col-md-2
+      button.btn.btn-primary(ng-click='warmUp()') Warm Up
 
   hr
 

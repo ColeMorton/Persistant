@@ -4,21 +4,20 @@ angular.module 'persistantApp'
 .service 'actionFactory', ->
   class Action
 
-    RUN_EXPENDITURE = 20
-
     constructor: (tricker, health) ->
       @model = tricker
       @health = health
 
-    run: =>
-      return if !@health.canSpendHealth 10
-      @health.spendHealth @getRunExpenditure()
-      @health.addFitness @getFitnessAddition()
+    run: (energyPercentage) =>
+      energyAmount = @getRunEnerygyAmount energyPercentage
+      return if !@health.canSpendHealth energyAmount
+      @health.spendHealth energyAmount
+      @health.addFitness @getFitnessAddition energyPercentage
 
-    getRunExpenditure: =>
-      parseInt((RUN_EXPENDITURE / 100) * @model.health)
+    getRunEnerygyAmount: (energyPercentage) =>
+      parseInt((energyPercentage / 100) * @model.health)
 
-    getFitnessAddition: =>
-      spend = RUN_EXPENDITURE / 6
-      result = parseInt((spend / 100) * @model.fitness)
+    getFitnessAddition: (energyPercentage) =>
+      energy = energyPercentage / 6
+      result = parseInt((energy / 100) * @model.fitness)
       return result

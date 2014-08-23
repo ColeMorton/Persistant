@@ -12,6 +12,8 @@ var TrickerSchema = new Schema({
   totalHealthGained: Number,
   totalHealthUsed: Number,
   healthModifiedDate: Date,
+  warmth: Number,
+  warmthModifiedDate: Date,
   active: Boolean
 });
 

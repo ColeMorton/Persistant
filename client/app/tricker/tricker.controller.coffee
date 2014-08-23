@@ -7,8 +7,14 @@ angular.module 'persistantApp'
     $scope.tricker = new trickerFactory trickers[0]
     console.log trickers[0]
 
-  $scope.run = ->
-    $scope.tricker.action.run()
+  $scope.longRun = ->
+    $scope.tricker.action.run(90)
+
+  $scope.mediumRun = ->
+    $scope.tricker.action.run(40)
+
+  $scope.shortRun = ->
+    $scope.tricker.action.run(20)
 
   $scope.reset = ->
     $scope.tricker.model.reset()
