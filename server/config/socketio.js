@@ -18,6 +18,7 @@ function onConnect(socket) {
   });
 
   // Insert sockets below
+  require('../api/tricker/tricker.socket').register(socket);
   require('../api/rest/rest.socket').register(socket);
   require('../api/thing/thing.socket').register(socket);
 }

@@ -6,9 +6,10 @@ angular.module 'persistantApp'
 
     save = ->
       @lastModified = moment()
-      $http.put '/api/rests/' + @_id, this
+      $http.put '/api/trickers/' + @_id, this
 
     reset = ->
+      this.age = 13
       this.totalHealthGained = 50
       this.totalHealthUsed = 0
       this.fitness = 100
