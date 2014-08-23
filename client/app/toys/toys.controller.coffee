@@ -102,5 +102,5 @@ angular.module 'persistantApp'
     $scope.runSpend = parseInt($scope.runSpend)
     return parseInt(($scope.runSpend / 100) * health.getHealth())
 
-  # reset()
-  start()
+  reset()
+  # start()
