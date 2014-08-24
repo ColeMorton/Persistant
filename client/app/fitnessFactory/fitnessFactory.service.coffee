@@ -14,6 +14,7 @@ angular.module 'persistantApp'
 
     constructor: (tricker) ->
       @model = tricker
+      @model.addFitness = addFitness
       @subtractOfflineFitness()
       @secondTicker()
 
@@ -40,23 +41,23 @@ angular.module 'persistantApp'
       else
         @model.nextFitnessPointIn = parseInt(Math.abs(moment().diff(nextPointDate) / 1000))
 
-    addFitness: (fitness) =>
+    addFitness = (fitness) ->
       fitness = MAX_FITNESS_ADDITION if fitness > MAX_FITNESS_ADDITION
-      @model.fitness += fitness
+      this.fitness += fitness
 
-    subtractOfflineFitness: =>
+    subtractOfflineFitness: ->
       nextPointDate = @getNextFitnessPointDate()
       while moment().isAfter(nextPointDate)
         @updateFitnessDegen nextPointDate
         nextPointDate = @getNextFitnessPointDate()
 
-    getNextFitnessPointDate: =>
+    getNextFitnessPointDate: ->
       moment(@model.fitnessModifiedDate).add(@getFitnessDegenTime(), 'seconds')
 
-    getFitnessDegenTime: =>
+    getFitnessDegenTime: ->
       totalInSeconds = FITNESS_DEGEN_TIME * MINUTE
       pointInSeconds = totalInSeconds / 100
       parseInt(pointInSeconds / SECOND)
 
-    isFitnessEmpty: =>
+    isFitnessEmpty: ->
       @model.fitness <= 80

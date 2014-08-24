@@ -12,6 +12,8 @@ angular.module 'persistantApp'
 
     constructor: (tricker) ->
       @model = tricker
+      @model.getWarmthAmountFromEnergy = getWarmthAmountFromEnergy
+      @model.addWarmth = addWarmth
       @subtractOfflineWarmth()
       @secondTicker()
 
@@ -32,31 +34,31 @@ angular.module 'persistantApp'
       else
         @model.nextWarmthPointIn = parseInt(Math.abs(moment().diff(nextPointDate) / 1000))
 
-    addWarmth: (warmth) =>
-      @model.warmth += parseInt warmth
-      @model.warmth = 100 if @model.warmth > 100
-      @model.save()
+    addWarmth = (warmth) ->
+      this.warmth += parseInt warmth
+      this.warmth = 100 if this.warmth > 100
+      this.save()
 
-    subtractOfflineWarmth: =>
+    subtractOfflineWarmth: ->
       nextPointDate = @getNextWarmthPointDate()
       while moment().isAfter(nextPointDate)
         @updateWarmthDegen nextPointDate
         nextPointDate = @getNextWarmthPointDate()
 
-    getOfflineWarmth: =>
+    getOfflineWarmth: ->
       duration = moment().diff(@model.warmthModifiedDate) / SECOND
       parseInt(duration / @getWarmthDegenTime())
 
-    getNextWarmthPointDate: =>
+    getNextWarmthPointDate: ->
       moment(@model.warmthModifiedDate).add(@getWarmthDegenTime(), 'seconds')
 
-    getWarmthDegenTime: =>
+    getWarmthDegenTime: ->
       totalInSeconds = WARMTH_DEGEN_TIME * MINUTE
       pointInSeconds = totalInSeconds / 100
       parseInt(pointInSeconds / SECOND)
 
-    getWarmthAmountFromEnergy: (energy) =>
-      parseInt((energy / @model.fitness) * 100)
+    getWarmthAmountFromEnergy = (energy) ->
+      parseInt((energy / this.fitness) * 100)
 
-    isWarmthEmpty: =>
+    isWarmthEmpty: ->
       @model.warmth <= 0

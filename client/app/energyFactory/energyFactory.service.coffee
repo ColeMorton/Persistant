@@ -10,10 +10,11 @@ angular.module 'persistantApp'
 
     mySecondTicker = null
 
-    constructor: (tricker, warmth) ->
+    constructor: (tricker) ->
       @model = tricker
       @model.energyIncrementLength = @getEnergyRegenTime()
-      @warmth = warmth
+      @model.canSpendEnergy = canSpendEnergy
+      @model.spendEnergy = spendEnergy
       @addOfflineEnergy()
       @secondTicker()
 
@@ -21,7 +22,7 @@ angular.module 'persistantApp'
       @updateEnergyRegen()
       mySecondTicker = $timeout(@secondTicker, SECOND)
 
-    updateEnergyRegen: (nextPointDate) =>
+    updateEnergyRegen: (nextPointDate) ->
       if nextPointDate == undefined
         nextPointDate = @getNextEnergyPointDate()
 
@@ -39,31 +40,31 @@ angular.module 'persistantApp'
       else
         @model.nextEnergyPointIn = parseInt(Math.abs(moment().diff(nextPointDate) / 1000))
 
-    addOfflineEnergy: =>
+    addOfflineEnergy: ->
       nextPointDate = @getNextEnergyPointDate()
       while moment().isAfter(nextPointDate)
         @updateEnergyRegen nextPointDate
         nextPointDate = @getNextEnergyPointDate()
       @model.updateEnergy()
 
-    getNextEnergyPointDate: =>
+    getNextEnergyPointDate: ->
       moment(@model.energyModifiedDate).add(@getEnergyRegenTime(), 'seconds')
 
-    getEnergyRegenTime: =>
+    getEnergyRegenTime: ->
       pointInMinutes = ENERGY_REGEN_TIME / @model.fitness
       pointInSeconds = pointInMinutes * 60
       parseInt(pointInSeconds)
 
-    canSpendEnergy: (spend) =>
-      @model.energy >= spend
+    canSpendEnergy = (spend) ->
+      this.energy >= spend
 
-    spendEnergy: (spend) =>
-      throw new Error "Cannot spend energy" if !@canSpendEnergy spend
-      @model.totalEnergyUsed += spend
-      warmth = @warmth.getWarmthAmountFromEnergy spend
-      @warmth.addWarmth warmth
-      @model.updateEnergy()
-      @model.save()
+    spendEnergy = (spend) ->
+      throw new Error "Cannot spend energy" if !this.canSpendEnergy spend
+      this.totalEnergyUsed += spend
+      warmth = this.getWarmthAmountFromEnergy spend
+      this.addWarmth warmth
+      this.updateEnergy()
+      this.save()
 
-    isEnergyFull: =>
+    isEnergyFull: ->
       @model.energy >= @model.fitness

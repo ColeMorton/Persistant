@@ -27,9 +27,9 @@ angular.module 'persistantApp'
       @model.save = save
       @model.reset = reset
       @model.updateEnergy = updateEnergy
-      @warmth = new warmthFactory(@model)
-      @energy = new energyFactory(@model, @warmth)
-      @fitness = new fitnessFactory(@model)
-      @action = new actionFactory(@model, @energy, @fitness, @warmth)
+      @warmth = new warmthFactory @model
+      @energy = new energyFactory @model, @warmth
+      @fitness = new fitnessFactory @model
+      @action = new actionFactory @model
 
       @model.updateEnergy()
