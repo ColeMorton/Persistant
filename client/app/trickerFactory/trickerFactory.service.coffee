@@ -30,6 +30,6 @@ angular.module 'persistantApp'
       @warmth = new warmthFactory(@model)
       @energy = new energyFactory(@model, @warmth)
       @fitness = new fitnessFactory(@model)
-      @action = new actionFactory(@model, @energy, @warmth)
+      @action = new actionFactory(@model, @energy, @fitness, @warmth)
 
       @model.updateEnergy()

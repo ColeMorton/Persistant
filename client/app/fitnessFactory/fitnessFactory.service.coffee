@@ -7,6 +7,7 @@ angular.module 'persistantApp'
     FITNESS_DEGEN_TIME = 14400
     MINUTE = 60000
     SECOND = 1000
+    MAX_FITNESS_ADDITION = 15
     MIN_FITNESS = 80
 
     mySecondTicker = null
@@ -38,6 +39,10 @@ angular.module 'persistantApp'
 
       else
         @model.nextFitnessPointIn = parseInt(Math.abs(moment().diff(nextPointDate) / 1000))
+
+    addFitness: (fitness) =>
+      fitness = MAX_FITNESS_ADDITION if fitness > MAX_FITNESS_ADDITION
+      @model.fitness += fitness
 
     subtractOfflineFitness: =>
       nextPointDate = @getNextFitnessPointDate()

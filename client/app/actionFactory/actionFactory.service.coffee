@@ -4,15 +4,17 @@ angular.module 'persistantApp'
 .service 'actionFactory', ->
   class Action
 
-    constructor: (tricker, energy, warmth) ->
+    constructor: (tricker, energy, fitness, warmth) ->
       @model = tricker
       @energy = energy
+      @fitness = fitness
+      @warmth = warmth
 
     run: (energyPercentage) =>
       energyAmount = @getEnergyAmount energyPercentage
       return if !@energy.canSpendEnergy energyAmount
       @energy.spendEnergy energyAmount
-      @energy.addFitness @getFitnessAddition energyPercentage
+      @fitness.addFitness @getFitnessAddition energyPercentage
 
     warmUp: =>
       energyAmount = @getEnergyAmount 100, 5
