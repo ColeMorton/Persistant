@@ -7,7 +7,7 @@ var TrickerSchema = new Schema({
   name: String,
   lastModified: Date,
   fitness: Number,
-  fitnessLossDate: Date,
+  fitnessModifiedDate: Date,
   age: Number,
   totalHealthGained: Number,
   totalHealthUsed: Number,

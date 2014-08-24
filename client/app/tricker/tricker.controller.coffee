@@ -36,7 +36,7 @@ angular.module 'persistantApp'
     tricker.totalHealthGained = 50
     tricker.totalHealthUsed = 0
     tricker.fitness = 100
-    tricker.fitnessLossDate = moment()
+    tricker.fitnessModifiedDate = moment()
     tricker.lastModified = moment()
     $http.post '/api/trickers', tricker
 

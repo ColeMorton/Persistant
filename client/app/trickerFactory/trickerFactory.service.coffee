@@ -1,7 +1,7 @@
 'use strict'
 
 angular.module 'persistantApp'
-.factory 'trickerFactory', ($http, $timeout, healthFactory, actionFactory) ->
+.factory 'trickerFactory', ($http, $timeout, healthFactory, fitnessFactory, actionFactory) ->
   class Tricker
 
     save = ->
@@ -10,17 +10,25 @@ angular.module 'persistantApp'
 
     reset = ->
       this.age = 13
+      this.healthModifiedDate = moment()
       this.totalHealthGained = 50
       this.totalHealthUsed = 0
       this.fitness = 100
-      this.fitnessLossDate = moment()
+      this.fitnessModifiedDate = moment()
       this.warmth = 50
       this.warmthModifiedDate = moment()
       this.save()
+
+    updateHealth = ->
+      this.health = this.totalHealthGained - this.totalHealthUsed
 
     constructor: (tricker) ->
       @model = tricker
       @model.save = save
       @model.reset = reset
+      @model.updateHealth = updateHealth
       @health = new healthFactory(@model)
+      @fitness = new fitnessFactory(@model)
       @action = new actionFactory(@model, @health)
+
+      @model.updateHealth()

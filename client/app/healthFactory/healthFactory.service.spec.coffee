@@ -8,7 +8,7 @@ describe 'Service: healthFactory', ->
   getFirstTricker = ->
     tricker = mockTrickers[0]
     tricker.lastModifiedDate = moment()
-    tricker.fitnessLossDate = moment()
+    tricker.fitnessModifiedDate = moment()
     tricker.healthModifiedDate = moment()
     return tricker
 
