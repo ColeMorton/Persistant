@@ -14,7 +14,10 @@ var TrickerSchema = new Schema({
   energyModifiedDate: Date,
   warmth: Number,
   warmthModifiedDate: Date,
-  active: Boolean
+  active: Boolean,
+  hookSkill: Number,
+  injuredDate: Date,
+  maxFitness: Number
 });
 
 module.exports = mongoose.model('Tricker', TrickerSchema);

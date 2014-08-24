@@ -15,6 +15,7 @@ angular.module 'persistantApp'
     constructor: (tricker) ->
       @model = tricker
       @model.addFitness = addFitness
+      @model.getInjury = getInjury
       @subtractOfflineFitness()
       @secondTicker()
 
@@ -44,12 +45,26 @@ angular.module 'persistantApp'
     addFitness = (fitness) ->
       fitness = MAX_FITNESS_ADDITION if fitness > MAX_FITNESS_ADDITION
       this.fitness += fitness
+      this.fitness = this.maxFitness if this.fitness > this.maxFitness
 
     subtractOfflineFitness: ->
       nextPointDate = @getNextFitnessPointDate()
       while moment().isAfter(nextPointDate)
         @updateFitnessDegen nextPointDate
         nextPointDate = @getNextFitnessPointDate()
+
+    getInjury = (differculty) ->
+      this.reduceEnergy 10
+      roll = parseInt(Math.random() * 100)
+      warmth = (100 - this.warmth) / 1.5
+      differculty = differculty / 20
+      result = (warmth + differculty) >= roll
+      if result
+        this.injuredDate = moment()
+        this.maxFitness = 30
+        this.fitness = 30
+        this.save()
+        console.log "You're injured!!"
 
     getNextFitnessPointDate: ->
       moment(@model.fitnessModifiedDate).add(@getFitnessDegenTime(), 'seconds')

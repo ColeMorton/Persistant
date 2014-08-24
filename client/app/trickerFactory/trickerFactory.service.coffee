@@ -11,12 +11,13 @@ angular.module 'persistantApp'
     reset = ->
       this.age = 13
       this.energyModifiedDate = moment()
-      this.totalEnergyGained = 50
+      this.totalEnergyGained = 80
       this.totalEnergyUsed = 0
       this.fitness = 100
       this.fitnessModifiedDate = moment()
-      this.warmth = 50
+      this.warmth = 10
       this.warmthModifiedDate = moment()
+      this.hookSkill = 1
       this.save()
 
     updateEnergy = ->

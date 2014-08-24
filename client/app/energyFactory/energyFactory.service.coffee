@@ -15,6 +15,7 @@ angular.module 'persistantApp'
       @model.energyIncrementLength = @getEnergyRegenTime()
       @model.canSpendEnergy = canSpendEnergy
       @model.spendEnergy = spendEnergy
+      @model.reduceEnergy = reduceEnergy
       @addOfflineEnergy()
       @secondTicker()
 
@@ -57,6 +58,11 @@ angular.module 'persistantApp'
 
     canSpendEnergy = (spend) ->
       this.energy >= spend
+
+    reduceEnergy = (spend) ->
+      this.totalEnergyUsed += spend
+      this.updateEnergy()
+      this.save()
 
     spendEnergy = (spend) ->
       throw new Error "Cannot spend energy" if !this.canSpendEnergy spend

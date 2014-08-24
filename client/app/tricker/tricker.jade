@@ -40,6 +40,12 @@ div(ng-include='"components/navbar/navbar.html"')
   hr
 
   .row
+    .col-md-12
+      | Hook Skill: {{tricker.model.hookSkill}}
+
+  hr
+
+  .row
     .col-md-2
       button.btn.btn-primary(ng-click='maxHook()') Hook 100
 

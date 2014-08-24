@@ -26,7 +26,7 @@ angular.module 'persistantApp'
     $scope.tricker.action.hook(50)
 
   $scope.minHook = ->
-    $scope.tricker.action.hook(10)
+    $scope.tricker.action.hook(20)
 
   $scope.reset = ->
     $scope.tricker.model.reset()
