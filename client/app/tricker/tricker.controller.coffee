@@ -19,6 +19,15 @@ angular.module 'persistantApp'
   $scope.warmUp = ->
     $scope.tricker.action.warmUp()
 
+  $scope.maxHook = ->
+    $scope.tricker.action.hook(90)
+
+  $scope.midHook = ->
+    $scope.tricker.action.hook(40)
+
+  $scope.minHook = ->
+    $scope.tricker.action.hook(20)
+
   $scope.reset = ->
     $scope.tricker.model.reset()
 
@@ -30,3 +39,6 @@ angular.module 'persistantApp'
     tricker.fitnessLossDate = moment()
     tricker.lastModified = moment()
     $http.post '/api/trickers', tricker
+
+  $scope.$on 'destory', ->
+    $scope.tricker = null

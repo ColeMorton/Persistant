@@ -5,7 +5,9 @@ angular.module 'persistantApp'
   class Health
 
     RECHARGE_TIME = 480
+    ENERGY_REGEN_TIME = 480
     WARMTH_DEGEN_TIME = 30
+    FITNESS_DEGEN_TIME = 14400
     MINUTE = 60000
     SECOND = 1000
     FITNESS_ADDITION = 15
@@ -21,41 +23,67 @@ angular.module 'persistantApp'
       @model = tricker
       @updateHealth()
       @model.healthIncrementLength = @getHealthRegenTime()
-      @model.nextHealthPointIn = @getHealthRegenTime()
+
       @loseOfflineWarmth()
       @addOfflineHealth()
-      mySecondTicker = $timeout(@secondTicker, SECOND)
+
+      @secondTicker()
       myMinuteTicker = $timeout(@minuteTicker, MINUTE)
 
     secondTicker: =>
       second += 1
-      # @updateWarmthCountdown()
-      @updateHealthIncrementCountdown()
-      @updateFitnessLoss()
+      @updateWarmthDegen moment()
+      @updateHealthRegen moment()
+      @updateFitnessDegen moment()
       mySecondTicker = $timeout(@secondTicker, SECOND)
 
     minuteTicker: =>
       minute += 1
       myMinuteTicker = $timeout(@myMinuteTicker, MINUTE)
 
-    updateWarmthCountdown: =>
-      nextWarmthLoss = moment(@model.warmthLossDate).add('hours', 1)
+    updateWarmthDegen: (endDate) ->
+      nextPoint = moment(@model.warmthModifiedDate).add(@getWarmthDegenTime(), 'seconds')
+      if (endDate.isAfter(nextPoint))
+        @model.warmth -= 1
+        @model.warmth = 0 if @model.warmth < 0
+        @model.warmthModifiedDate = moment()
+        @model.save()
 
-    updateHealthIncrementCountdown: =>
-      if @isHealthFull()
-        @model.nextHealthPointIn = 0
-        return
+      else
+        @model.nextWarmthPointIn = parseInt(Math.abs(moment().diff(nextPoint) / 1000))
 
-      if @model.nextHealthPointIn > 0
-        @model.nextHealthPointIn -= 1
+    updateHealthRegen: (endDate) =>
+      nextPoint = moment(@model.healthModifiedDate).add(@getHealthRegenTime(), 'seconds')
+      if (endDate.isAfter(nextPoint))
+        @model.totalHealthGained += 1
+        @model.healthModifiedDate = moment()
 
-      if !@isHealthFull() && @model.nextHealthPointIn == 0
-        @incrementHealth()
-        @model.nextHealthPointIn = @getHealthRegenTime()
+        if @model.health > @model.fitness
+          healthReduction = @model.health - @model.fitness
+          @model.totalHealthGained -= healthReduction
 
-    incrementHealth: =>
-      @model.totalHealthGained += 1
-      @updateHealth()
+        @updateHealth()
+        @model.save()
+
+      else
+        @model.nextHealthPointIn = parseInt(Math.abs(moment().diff(nextPoint) / 1000))
+
+    updateFitnessDegen: (endDate) ->
+      nextPoint = moment(@model.fitnessLossDate).add(@getFitnessDegenTime(), 'seconds')
+      if (endDate.isAfter(nextPoint))
+        @model.fitness -= 1
+        @model.fitness = MIN_FITNESS if @model.fitness < MIN_FITNESS
+        @model.fitnessLossDate = moment()
+
+        if @model.health > @model.fitness
+          healthReduction = @model.health - @model.fitness
+          @model.totalHealthGained -= healthReduction
+          @updateHealth()
+
+        @model.save()
+
+      else
+        @model.nextFitnessPointIn = parseInt(Math.abs(moment().diff(nextPoint) / 1000))
 
     addFitness: (fitness) =>
       fitness = FITNESS_ADDITION if fitness > FITNESS_ADDITION
@@ -65,7 +93,7 @@ angular.module 'persistantApp'
       warmth =  (energyUsed / @model.fitness) * 100
       @model.warmth += parseInt warmth
       @model.warmth = 100 if @model.warmth > 100
-      @saveWarmth()
+      @model.save()
 
     loseOfflineWarmth: =>
       offlineWarmthLoss = @getOfflineWarmth()
@@ -73,7 +101,7 @@ angular.module 'persistantApp'
         @model.warmth -= offlineWarmthLoss
       else
         @model.warmth = 0
-      @saveWarmth()
+      @model.save()
 
     addOfflineHealth: =>
       offlineHealth = @getOfflineHealth()
@@ -83,27 +111,7 @@ angular.module 'persistantApp'
         @model.totalHealthGained += offlineHealth
 
       @updateHealth
-      @saveHealth()
-
-    updateFitnessLoss: ->
-      nextFitnessLoss = moment(@model.fitnessLossDate).add(1, 'hours')
-      if (moment().isAfter(nextFitnessLoss))
-        @model.fitness -= @getFitnessReduction()
-        @model.fitness = MIN_FITNESS if @model.fitness < MIN_FITNESS
-        @model.fitnessLossDate = moment()
-
-        if @model.health > @model.fitness
-          healthReduction = @model.health - @model.fitness
-          @model.totalHealthGained -= healthReduction
-          @updateHealth()
-
-        @saveHealth()
-
-    updateHealth: =>
-      @model.health = @model.totalHealthGained - @model.totalHealthUsed
-
-    isHealthFull: =>
-      @model.health >= @model.fitness
+      @model.save()
 
     getOfflineHealth: =>
       duration = moment().diff(@model.healthModifiedDate) / SECOND
@@ -114,17 +122,22 @@ angular.module 'persistantApp'
       parseInt(duration / @getWarmthDegenTime())
 
     getHealthRegenTime: =>
-      totalInSeconds = RECHARGE_TIME * MINUTE
-      pointInSeconds = totalInSeconds / @model.fitness
-      parseInt(pointInSeconds / SECOND)
+      pointInMinutes = ENERGY_REGEN_TIME / @model.fitness
+      pointInSeconds = pointInMinutes * 60
+      parseInt(pointInSeconds)
 
     getWarmthDegenTime: =>
       totalInSeconds = WARMTH_DEGEN_TIME * MINUTE
       pointInSeconds = totalInSeconds / 100
       parseInt(pointInSeconds / SECOND)
 
-    getFitnessReduction: =>
-      parseInt((FITNESS_REDUCTION / @model.fitness) * 100)
+    getFitnessDegenTime: =>
+      totalInSeconds = FITNESS_DEGEN_TIME * MINUTE
+      pointInSeconds = totalInSeconds / 100
+      parseInt(pointInSeconds / SECOND)
+
+    updateHealth: =>
+      @model.health = @model.totalHealthGained - @model.totalHealthUsed
 
     canSpendHealth: (spend) =>
       @model.health >= spend
@@ -134,12 +147,13 @@ angular.module 'persistantApp'
       @model.totalHealthUsed += spend
       @addWarmth(spend)
       @updateHealth()
-      @saveHealth()
-
-    saveHealth: =>
-      @model.healthModifiedDate = moment()
       @model.save()
 
-    saveWarmth: =>
-      @model.warmthModifiedDate = moment()
-      @model.save()
+    isHealthFull: =>
+      @model.health >= @model.fitness
+
+    isWarmthEmpty: =>
+      @model.warmth <= 0
+
+    isFitnessEmpty: =>
+      @model.fitness <= 80

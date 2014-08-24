@@ -20,6 +20,11 @@ angular.module 'persistantApp'
       @health.spendHealth energyAmount
       @health.addWarmth (energyAmount * 3)
 
+    hook: (energyPercentage) =>
+      energyAmount = @getEnerygyAmount energyPercentage
+      return if !@health.canSpendHealth energyAmount
+      @health.spendHealth energyAmount
+
     getEnerygyAmount: (energyPercentage) =>
       parseInt((energyPercentage / 100) * @model.health)
 

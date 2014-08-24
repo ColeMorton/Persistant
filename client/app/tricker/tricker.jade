@@ -7,7 +7,11 @@ div(ng-include='"components/navbar/navbar.html"')
     .col-md-12
       | Warmth: {{tricker.model.warmth}}
     .col-md-12
+      | Warmth Degeneration in: {{tricker.model.nextWarmthPointIn}}
+    .col-md-12
       | Fitness: {{tricker.model.fitness}}
+    .col-md-12
+      | Fitness Degeneration in: {{tricker.model.nextFitnessPointIn}}
     .col-md-12
       | Energy: {{tricker.model.health}}
     .col-md-12
@@ -31,7 +35,19 @@ div(ng-include='"components/navbar/navbar.html"')
 
   .row
     .col-md-2
-      button.btn.btn-primary(ng-click='warmUp()') Warm Up
+      button.btn.btn-primary(ng-click='warmUp()') Warm Up 10
+
+  hr
+
+  .row
+    .col-md-2
+      button.btn.btn-primary(ng-click='maxHook()') Hook 90
+
+    .col-md-2
+      button.btn.btn-primary(ng-click='midHook()') Hook 40
+
+    .col-md-2
+      button.btn.btn-primary(ng-click='minHook()') Hook 20
 
   hr
 
