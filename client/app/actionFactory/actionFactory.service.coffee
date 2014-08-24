@@ -4,29 +4,30 @@ angular.module 'persistantApp'
 .service 'actionFactory', ->
   class Action
 
-    constructor: (tricker, health) ->
+    constructor: (tricker, energy, warmth) ->
       @model = tricker
-      @health = health
+      @energy = energy
 
     run: (energyPercentage) =>
-      energyAmount = @getEnerygyAmount energyPercentage
-      return if !@health.canSpendHealth energyAmount
-      @health.spendHealth energyAmount
-      @health.addFitness @getFitnessAddition energyPercentage
+      energyAmount = @getEnergyAmount energyPercentage
+      return if !@energy.canSpendEnergy energyAmount
+      @energy.spendEnergy energyAmount
+      @energy.addFitness @getFitnessAddition energyPercentage
 
     warmUp: =>
-      energyAmount = @getEnerygyAmount 10
-      return if !@health.canSpendHealth energyAmount
-      @health.spendHealth energyAmount
-      @health.addWarmth (energyAmount * 3)
+      energyAmount = @getEnergyAmount 100, 5
+      return if !@energy.canSpendEnergy energyAmount
+      @energy.spendEnergy energyAmount
+      @warmth.addWarmth 15
 
     hook: (energyPercentage) =>
-      energyAmount = @getEnerygyAmount energyPercentage
-      return if !@health.canSpendHealth energyAmount
-      @health.spendHealth energyAmount
+      energyAmount = @getEnergyAmount energyPercentage, 10
+      return if !@energy.canSpendEnergy energyAmount
+      @energy.spendEnergy energyAmount
 
-    getEnerygyAmount: (energyPercentage) =>
-      parseInt((energyPercentage / 100) * @model.health)
+    getEnergyAmount: (energyPercentage, maximum) =>
+      maximum = @model.energy if maximum == undefined
+      parseInt((energyPercentage / 100) * maximum)
 
     getFitnessAddition: (energyPercentage) =>
       energy = energyPercentage / 6

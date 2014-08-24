@@ -10,9 +10,10 @@ angular.module 'persistantApp'
 
     mySecondTicker = null
 
-    constructor: (tricker) ->
+    constructor: (tricker, warmth) ->
       @model = tricker
       @model.energyIncrementLength = @getEnergyRegenTime()
+      @warmth = warmth
       @addOfflineEnergy()
       @secondTicker()
 
@@ -59,7 +60,8 @@ angular.module 'persistantApp'
     spendEnergy: (spend) =>
       throw new Error "Cannot spend energy" if !@canSpendEnergy spend
       @model.totalEnergyUsed += spend
-      @addWarmth(spend)
+      warmth = @warmth.getWarmthAmountFromEnergy spend
+      @warmth.addWarmth warmth
       @model.updateEnergy()
       @model.save()
 

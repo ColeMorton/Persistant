@@ -20,13 +20,13 @@ angular.module 'persistantApp'
     $scope.tricker.action.warmUp()
 
   $scope.maxHook = ->
-    $scope.tricker.action.hook(90)
+    $scope.tricker.action.hook(100)
 
   $scope.midHook = ->
-    $scope.tricker.action.hook(40)
+    $scope.tricker.action.hook(50)
 
   $scope.minHook = ->
-    $scope.tricker.action.hook(20)
+    $scope.tricker.action.hook(10)
 
   $scope.reset = ->
     $scope.tricker.model.reset()

@@ -32,8 +32,7 @@ angular.module 'persistantApp'
       else
         @model.nextWarmthPointIn = parseInt(Math.abs(moment().diff(nextPointDate) / 1000))
 
-    addWarmth: (energyUsed) =>
-      warmth =  (energyUsed / @model.fitness) * 100
+    addWarmth: (warmth) =>
       @model.warmth += parseInt warmth
       @model.warmth = 100 if @model.warmth > 100
       @model.save()
@@ -55,6 +54,9 @@ angular.module 'persistantApp'
       totalInSeconds = WARMTH_DEGEN_TIME * MINUTE
       pointInSeconds = totalInSeconds / 100
       parseInt(pointInSeconds / SECOND)
+
+    getWarmthAmountFromEnergy: (energy) =>
+      parseInt((energy / @model.fitness) * 100)
 
     isWarmthEmpty: =>
       @model.warmth <= 0
