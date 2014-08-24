@@ -33,8 +33,8 @@ angular.module 'persistantApp'
 
   newTricker = ->
     tricker = {}
-    tricker.totalHealthGained = 50
-    tricker.totalHealthUsed = 0
+    tricker.totalEnergyGained = 50
+    tricker.totalEnergyUsed = 0
     tricker.fitness = 100
     tricker.fitnessModifiedDate = moment()
     tricker.lastModified = moment()

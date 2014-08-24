@@ -9,9 +9,9 @@ var TrickerSchema = new Schema({
   fitness: Number,
   fitnessModifiedDate: Date,
   age: Number,
-  totalHealthGained: Number,
-  totalHealthUsed: Number,
-  healthModifiedDate: Date,
+  totalEnergyGained: Number,
+  totalEnergyUsed: Number,
+  energyModifiedDate: Date,
   warmth: Number,
   warmthModifiedDate: Date,
   active: Boolean
