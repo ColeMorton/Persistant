@@ -56,13 +56,18 @@ angular.module 'persistantApp'
     getInjury = (differculty) ->
       this.reduceEnergy 10
       roll = parseInt(Math.random() * 100)
-      warmth = (100 - this.warmth) / 1.5
-      differculty = differculty / 20
+      warmth = (100 - this.warmth) / 6
+      differculty = differculty / 30
       result = (warmth + differculty) >= roll
       if result
         this.injuredDate = moment()
         this.maxFitness = 30
         this.fitness = 30
+
+        if this.energy > this.fitness
+          energyReduction = this.energy - this.fitness
+          this.totalEnergyGained -= energyReduction
+
         this.save()
         console.log "You're injured!!"
 
