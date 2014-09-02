@@ -57,10 +57,13 @@ angular.module 'persistantApp'
       parseInt(pointInSeconds)
 
     canSpendEnergy = (spend) ->
-      this.energy >= spend
+      this.energy > spend
 
     reduceEnergy = (spend) ->
-      this.totalEnergyUsed += spend
+      if this.energy < spend
+        this.totalEnergyUsed == this.totalEnergyGained
+      else
+        this.totalEnergyUsed += spend
       this.updateEnergy()
       this.save()
 

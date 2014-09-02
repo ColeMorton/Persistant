@@ -6,6 +6,14 @@ angular.module 'persistantApp'
 
     HOOK_DIFFERCULTY = 200
 
+    trickSuccess = (model) ->
+      model.hookSkill += 5
+      model.fitness += 1
+
+    trickFailed = (model) ->
+      model.hookSkill += 1
+      model.getInjury HOOK_DIFFERCULTY
+
     constructor: (tricker) ->
       @model = tricker
 
@@ -25,7 +33,7 @@ angular.module 'persistantApp'
       energyAmount = @getEnergyAmount energyPercentage, 10
       return if !@model.canSpendEnergy energyAmount
       @model.spendEnergy energyAmount
-      result = @doTrick energyPercentage
+      result = @doTrick energyPercentage, @model.hookSkill
 
     getEnergyAmount: (energyPercentage, maximum) ->
       maximum = @model.energy if maximum == undefined
@@ -36,23 +44,11 @@ angular.module 'persistantApp'
       result = parseInt((energy / 100) * @model.fitness)
       return result
 
-    doTrick: (energyPercentage) =>
+    doTrick: (energyPercentage, skill) =>
       differculty = HOOK_DIFFERCULTY
       energy = energyPercentage * energyPercentage
-      skill = @model.hookSkill
       chance = (energy / differculty) + skill
       roll = parseInt(Math.random() * 100)
       console.log 'Chance: ' + chance
-      if chance >= roll
-        console.log "Success!!!"
-        @model.hookSkill += 5
-        @model.fitness += 1
-      else
-        console.log "Fail..."
-        @model.hookSkill += 1
-        @model.getInjury HOOK_DIFFERCULTY
+      if chance >= roll then trickSuccess(@model) else trickFailed(@model)
       @model.save()
-
-
-
-
