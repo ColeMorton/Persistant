@@ -12,46 +12,36 @@ angular.module 'persistantApp'
 
     mySecondTicker = null
 
-    constructor: (tricker) ->
-      @model = tricker
-      @model.addFitness = addFitness
-      @model.getInjury = getInjury
-      @subtractOfflineFitness()
-      @secondTicker()
+    getNextFitnessPointDate = (tricker) ->
+      moment(tricker.fitnessModifiedDate).add(getFitnessDegenTime(), 'seconds')
 
-    secondTicker: =>
-      @updateFitnessDegen()
-      mySecondTicker = $timeout(@secondTicker, SECOND)
+    getFitnessDegenTime = ->
+      totalInSeconds = FITNESS_DEGEN_TIME * MINUTE
+      pointInSeconds = totalInSeconds / 100
+      parseInt(pointInSeconds / SECOND)
 
-    updateFitnessDegen: (nextPointDate) ->
+    subtractOfflineFitness = (tricker) ->
+      nextPointDate = getNextFitnessPointDate tricker
+      while moment().isAfter(nextPointDate)
+        updateFitnessDegen tricker, nextPointDate
+        nextPointDate = getNextFitnessPointDate tricker
+
+    updateFitnessDegen = (tricker, nextPointDate) ->
       if nextPointDate == undefined
-        nextPointDate = @getNextFitnessPointDate()
+        nextPointDate = getNextFitnessPointDate tricker
 
       if (moment().isAfter(nextPointDate))
-        @model.fitness -= 1
-        @model.fitness = MIN_FITNESS if @model.fitness < MIN_FITNESS
-        @model.fitnessModifiedDate = nextPointDate
-
-        if @model.health > @model.fitness
-          healthReduction = @model.health - @model.fitness
-          @model.totalHealthGained -= healthReduction
-          @updateHealth()
-
-        @model.save()
-
+        tricker.removeFitness 1, nextPointDate
       else
-        @model.nextFitnessPointIn = parseInt(Math.abs(moment().diff(nextPointDate) / 1000))
+        tricker.nextFitnessPointIn = parseInt(Math.abs(moment().diff(nextPointDate) / 1000))
+
+    isFitnessEmpty = (tricker) ->
+      tricker.fitness <= 80
 
     addFitness = (fitness) ->
       fitness = MAX_FITNESS_ADDITION if fitness > MAX_FITNESS_ADDITION
       this.fitness += fitness
       this.fitness = this.maxFitness if this.fitness > this.maxFitness
-
-    subtractOfflineFitness: ->
-      nextPointDate = @getNextFitnessPointDate()
-      while moment().isAfter(nextPointDate)
-        @updateFitnessDegen nextPointDate
-        nextPointDate = @getNextFitnessPointDate()
 
     getInjury = (differculty) ->
       this.reduceEnergy 10
@@ -71,13 +61,14 @@ angular.module 'persistantApp'
         this.save()
         console.log "You're injured!!"
 
-    getNextFitnessPointDate: ->
-      moment(@model.fitnessModifiedDate).add(@getFitnessDegenTime(), 'seconds')
+    constructor: (tricker) ->
+      @tricker = tricker
+      @tricker.addFitness = addFitness
+      @tricker.getInjury = getInjury
 
-    getFitnessDegenTime: ->
-      totalInSeconds = FITNESS_DEGEN_TIME * MINUTE
-      pointInSeconds = totalInSeconds / 100
-      parseInt(pointInSeconds / SECOND)
+      subtractOfflineFitness tricker
+      @secondTicker()
 
-    isFitnessEmpty: ->
-      @model.fitness <= 80
+    secondTicker: =>
+      updateFitnessDegen @tricker
+      mySecondTicker = $timeout(@secondTicker, SECOND)
