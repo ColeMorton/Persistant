@@ -5,13 +5,13 @@ angular.module 'persistantApp'
 
   $http.get('/api/trickers').success (trickers) ->
     $scope.tricker = new trickerFactory trickers[0]
-    console.log trickers[0]
+    console.log trickers
 
   $scope.longRun = ->
-    $scope.tricker.action.run(90)
+    $scope.tricker.action.run(100)
 
   $scope.mediumRun = ->
-    $scope.tricker.action.run(40)
+    $scope.tricker.action.run(50)
 
   $scope.shortRun = ->
     $scope.tricker.action.run(20)

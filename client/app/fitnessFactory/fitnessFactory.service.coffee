@@ -23,14 +23,14 @@ angular.module 'persistantApp'
     subtractOfflineFitness = (tricker) ->
       nextPointDate = getNextFitnessPointDate tricker
       while moment().isAfter(nextPointDate)
-        tricker.removeFitness 1, nextPointDate
+        tricker.removeFitness 1
+        tricker.fitnessModifiedDate = nextPointDate
         nextPointDate = getNextFitnessPointDate tricker
 
     updateFitnessDegen = (tricker) ->
       nextPointDate = getNextFitnessPointDate tricker
-
       if (moment().isAfter(nextPointDate))
-        tricker.removeFitness 1, nextPointDate
+        tricker.removeFitness 1
       else
         tricker.nextFitnessPointIn = parseInt(Math.abs(moment().diff(nextPointDate) / 1000))
 
@@ -40,35 +40,28 @@ angular.module 'persistantApp'
     addFitness = (fitness) ->
       fitness = MAX_FITNESS_ADDITION if fitness > MAX_FITNESS_ADDITION
       this.fitness += fitness
-      this.fitness = this.maxFitness if this.fitness > this.maxFitness
 
-    removeFitness = (fitness, nextPointDate) ->
+    removeFitness = (fitness) ->
+      nextPointDate = getNextFitnessPointDate this
       this.fitness -= fitness
-      this.fitness = MIN_FITNESS if this.fitness < MIN_FITNESS
       this.fitnessModifiedDate = nextPointDate
+      this.save()
 
       if this.energy > this.fitness
         energyReduction = this.energy - this.fitness
-        this.totalEnergyGained -= energyReduction
-        this.updateEnergy()
+        this.spendEnergy energyReduction
 
-      this.save()
+      return
 
     getInjury = (differculty) ->
-      this.reduceEnergy 10
       roll = parseInt(Math.random() * 100)
       warmth = (100 - this.warmth) / 6
       differculty = differculty / 30
       result = (warmth + differculty) >= roll
       if result
         this.injuredDate = moment()
-        this.maxFitness = 30
-        this.fitness = 30
-
-        if this.energy > this.fitness
-          energyReduction = this.energy - this.fitness
-          this.totalEnergyGained -= energyReduction
-
+        fitnessReduction = this.fitness * 0.8
+        this.removeFitness fitnessReduction
         this.save()
         console.log "You're injured!!"
 

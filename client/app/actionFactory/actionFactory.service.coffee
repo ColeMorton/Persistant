@@ -7,10 +7,12 @@ angular.module 'persistantApp'
     HOOK_DIFFERCULTY = 200
 
     trickSuccess = (model) ->
+      console.log "Success!"
       model.hookSkill += 5
-      model.fitness += 1
+      model.addFitness 1
 
     trickFailed = (model) ->
+      console.log "Fail"
       model.hookSkill += 1
       model.getInjury HOOK_DIFFERCULTY
 
@@ -21,13 +23,13 @@ angular.module 'persistantApp'
       energyAmount = @getEnergyAmount energyPercentage
       return if !@model.canSpendEnergy energyAmount
       @model.spendEnergy energyAmount
-      @model.addFitness @getFitnessAddition energyPercentage
+      @model.addFitness @getFitnessAddition energyAmount
 
     warmUp: ->
-      energyAmount = @getEnergyAmount 100, 5
+      energyAmount = @getEnergyAmount 100, 10
       return if !@model.canSpendEnergy energyAmount
       @model.spendEnergy energyAmount
-      @model.addWarmth 15
+      @model.addWarmth 40
 
     hook: (energyPercentage) ->
       energyAmount = @getEnergyAmount energyPercentage, 10
@@ -36,13 +38,11 @@ angular.module 'persistantApp'
       result = @doTrick energyPercentage, @model.hookSkill
 
     getEnergyAmount: (energyPercentage, maximum) ->
-      maximum = @model.energy if maximum == undefined
+      maximum = @model.energy - 1 if maximum == undefined
       parseInt((energyPercentage / 100) * maximum)
 
-    getFitnessAddition: (energyPercentage) ->
-      energy = energyPercentage / 6
-      result = parseInt((energy / 100) * @model.fitness)
-      return result
+    getFitnessAddition: (energyAmount) ->
+      parseInt(energyAmount / 5)
 
     doTrick: (energyPercentage, skill) =>
       differculty = HOOK_DIFFERCULTY

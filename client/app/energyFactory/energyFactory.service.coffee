@@ -4,7 +4,8 @@ angular.module 'persistantApp'
 .service 'energyFactory', ($timeout) ->
   class Energy
 
-    ENERGY_REGEN_TIME = 480
+    # ENERGY_REGEN_TIME = 480
+    ENERGY_REGEN_TIME = 10
     MINUTE = 60000
     SECOND = 1000
 
@@ -70,7 +71,7 @@ angular.module 'persistantApp'
     spendEnergy = (spend) ->
       throw new Error "Cannot spend energy" if !this.canSpendEnergy spend
       this.totalEnergyUsed += spend
-      warmth = this.getWarmthAmountFromEnergy spend
+      warmth = this.getWarmthAmountFromEnergy spend * 2
       this.addWarmth warmth
       this.updateEnergy()
       this.save()
