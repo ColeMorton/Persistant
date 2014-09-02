@@ -10,49 +10,33 @@ angular.module 'persistantApp'
 
     mySecondTicker = null
 
-    constructor: (tricker) ->
-      @model = tricker
-      @model.getWarmthAmountFromEnergy = getWarmthAmountFromEnergy
-      @model.addWarmth = addWarmth
-      @subtractOfflineWarmth()
-      @secondTicker()
-
-    secondTicker: =>
-      @updateWarmthDegen()
-      mySecondTicker = $timeout(@secondTicker, SECOND)
-
-    updateWarmthDegen: (nextPointDate) ->
+    updateWarmthDegen = (tricker, nextPointDate) ->
       if nextPointDate == undefined
-        nextPointDate = @getNextWarmthPointDate()
+        nextPointDate = getNextWarmthPointDate tricker
 
       if (moment().isAfter(nextPointDate))
-        @model.warmth -= 1
-        @model.warmth = 0 if @model.warmth < 0
-        @model.warmthModifiedDate = nextPointDate
-        @model.save()
-
+        tricker.warmth -= 1
+        tricker.warmth = 0 if tricker.warmth < 0
+        tricker.warmthModifiedDate = nextPointDate
+        tricker.save()
       else
-        @model.nextWarmthPointIn = parseInt(Math.abs(moment().diff(nextPointDate) / 1000))
+        tricker.nextWarmthPointIn = parseInt(Math.abs(moment().diff(nextPointDate) / 1000))
 
     addWarmth = (warmth) ->
       this.warmth += parseInt warmth
       this.warmth = 100 if this.warmth > 100
       this.save()
 
-    subtractOfflineWarmth: ->
-      nextPointDate = @getNextWarmthPointDate()
+    subtractOfflineWarmth = (tricker) ->
+      nextPointDate = getNextWarmthPointDate tricker
       while moment().isAfter(nextPointDate)
-        @updateWarmthDegen nextPointDate
-        nextPointDate = @getNextWarmthPointDate()
+        updateWarmthDegen tricker, nextPointDate
+        nextPointDate = getNextWarmthPointDate tricker
 
-    getOfflineWarmth: ->
-      duration = moment().diff(@model.warmthModifiedDate) / SECOND
-      parseInt(duration / @getWarmthDegenTime())
+    getNextWarmthPointDate = (tricker) ->
+      moment(tricker.warmthModifiedDate).add(getWarmthDegenTime(), 'seconds')
 
-    getNextWarmthPointDate: ->
-      moment(@model.warmthModifiedDate).add(@getWarmthDegenTime(), 'seconds')
-
-    getWarmthDegenTime: ->
+    getWarmthDegenTime = ->
       totalInSeconds = WARMTH_DEGEN_TIME * MINUTE
       pointInSeconds = totalInSeconds / 100
       parseInt(pointInSeconds / SECOND)
@@ -60,5 +44,17 @@ angular.module 'persistantApp'
     getWarmthAmountFromEnergy = (energy) ->
       parseInt((energy / this.fitness) * 100)
 
-    isWarmthEmpty: ->
+    isWarmthEmpty = ->
       @model.warmth <= 0
+
+    constructor: (tricker) ->
+      @tricker = tricker
+      @tricker.getWarmthAmountFromEnergy = getWarmthAmountFromEnergy
+      @tricker.addWarmth = addWarmth
+
+      subtractOfflineWarmth tricker
+      @secondTicker()
+
+    secondTicker: =>
+      updateWarmthDegen @tricker
+      mySecondTicker = $timeout(@secondTicker, SECOND)
