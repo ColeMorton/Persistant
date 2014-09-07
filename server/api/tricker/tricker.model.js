@@ -15,7 +15,12 @@ var TrickerSchema = new Schema({
   warmth: Number,
   warmthModifiedDate: Date,
   active: Boolean,
-  hookSkill: Number,
+  skillHK: Number,
+  styleHK: Number,
+  beltHK: Number,
+  skillC1: Number,
+  styleC1: Number,
+  beltC1: Number,
   injuredDate: Date,
   maxFitness: Number
 });

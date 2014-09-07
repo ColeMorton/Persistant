@@ -1,7 +1,7 @@
 'use strict'
 
 angular.module 'persistantApp'
-.service 'trickerClass', ($http, $timeout, energyClass, fitnessClass, warmthClass, actionClass, trickFactory, TRICK_TYPES) ->
+.service 'trickerClass', ($http, $timeout, energyClass, fitnessClass, warmthClass, actionClass, trickFactory, TRICK_TYPES, BELT_TYPES) ->
   class Tricker
 
     save = ->
@@ -11,42 +11,37 @@ angular.module 'persistantApp'
     reset = ->
       this.age = 13
       this.energyModifiedDate = moment()
-      this.totalEnergyGained = 120
+      this.totalEnergyGained = 80
       this.totalEnergyUsed = 0
-      this.fitness = 120
+      this.fitness = 80
       this.fitnessModifiedDate = moment()
-      this.warmth = 10
+      this.warmth = 0
       this.warmthModifiedDate = moment()
-      this.hookSkill = 0
-      this.updateCost TRICK_TYPES.HOOK
+
+      this.skillHK = 0
+      this.styleHK = 0
+      this.beltHK = 0
+      this.beltColorHK = ""
+      this.skillC1 = 0
+      this.styleC1 = 0
+      this.beltC1 = 0
+      trickFactory.updateCost this, TRICK_TYPES.HOOK
+
       this.save()
       this.updateEnergy()
 
     updateEnergy = ->
       this.energy = this.totalEnergyGained - this.totalEnergyUsed
 
-    updateCost = (trickId) ->
-      console.log "Current cost: " + this["cost" + TRICK_TYPES.getName(trickId)]
-      console.log "New cost: " + trickFactory.getCost this, TRICK_TYPES.HOOK
-      console.log ""
-      this["cost" + TRICK_TYPES.getName(trickId)] = trickFactory.getCost this, TRICK_TYPES.HOOK
-
-    addSkill = (trickId) ->
-      this.hookSkill += TRICK_TYPES.getTrickSuccessSkill TRICK_TYPES.HOOK
-      this.hookSkill = 100 if this.hookSkill > 100
-      this.save()
-
     constructor: (tricker) ->
       @model = tricker
       @model.save = save
       @model.reset = reset
       @model.updateEnergy = updateEnergy
-      @model.updateCost = updateCost
-      @model.addSkill = addSkill
       @warmth = new warmthClass @model
       @energy = new energyClass @model, @warmth
       @fitness = new fitnessClass @model
       @action = new actionClass @model
 
       @model.updateEnergy()
-      @model.updateCost TRICK_TYPES.HOOK
+      trickFactory.updateCost @model, TRICK_TYPES.HOOK
