@@ -12,6 +12,18 @@ angular.module 'persistantApp'
 
     mySecondTicker = null
 
+    constructor: (@tricker) ->
+      @tricker.addFitness = addFitness
+      @tricker.removeFitness = removeFitness
+      @tricker.getInjury = getInjury
+
+      subtractOfflineFitness @tricker
+      @secondTicker()
+
+    secondTicker: =>
+      updateFitnessDegen @tricker
+      mySecondTicker = $timeout(@secondTicker, SECOND)
+
     getNextFitnessPointDate = (tricker) ->
       moment(tricker.fitnessModifiedDate).add(getFitnessDegenTime(), 'seconds')
 
@@ -38,8 +50,11 @@ angular.module 'persistantApp'
       tricker.fitness <= 80
 
     addFitness = (fitness) ->
+      nextPointDate = getNextFitnessPointDate this
       fitness = MAX_FITNESS_ADDITION if fitness > MAX_FITNESS_ADDITION
       this.fitness += fitness
+      this.fitnessModifiedDate = nextPointDate
+      this.save()
 
     removeFitness = (fitness) ->
       nextPointDate = getNextFitnessPointDate this
@@ -64,16 +79,3 @@ angular.module 'persistantApp'
         this.removeFitness fitnessReduction
         this.save()
         console.log "You're injured!!"
-
-    constructor: (tricker) ->
-      @tricker = tricker
-      @tricker.addFitness = addFitness
-      @tricker.removeFitness = removeFitness
-      @tricker.getInjury = getInjury
-
-      subtractOfflineFitness tricker
-      @secondTicker()
-
-    secondTicker: =>
-      updateFitnessDegen @tricker
-      mySecondTicker = $timeout(@secondTicker, SECOND)

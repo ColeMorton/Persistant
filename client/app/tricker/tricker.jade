@@ -2,22 +2,29 @@ div(ng-include='"components/navbar/navbar.html"')
 
 .container
   .row
-    .col-md-12
-      | Age: {{tricker.model.age}}
-    .col-md-12
-      | Warmth: {{tricker.model.warmth}}
-    .col-md-12
-      | Warmth Degeneration in: {{tricker.model.nextWarmthPointIn}}
-    .col-md-12
-      | Fitness: {{tricker.model.fitness}}
-    .col-md-12
-      | Fitness Degeneration in: {{tricker.model.nextFitnessPointIn}}
-    .col-md-12
-      | Energy: {{tricker.model.energy}}
-    .col-md-12
-      | Energy Regeneration in: {{tricker.model.nextEnergyPointIn}}
-    .col-md-12
-      | Energy Regeneration time: {{tricker.model.energyIncrementLength}}
+    .col-md-3
+      .row
+        .col-md-12
+          | Age: {{tricker.model.age}}
+        .col-md-12
+          | Warmth: {{tricker.model.warmth}}
+        .col-md-12
+          | Warmth Degeneration in: {{tricker.model.nextWarmthPointIn}}
+        .col-md-12
+          | Fitness: {{tricker.model.fitness}}
+        .col-md-12
+          | Fitness Degeneration in: {{tricker.model.nextFitnessPointIn}}
+        .col-md-12
+          | Energy: {{tricker.model.energy}}
+        .col-md-12
+          | Energy Regeneration in: {{tricker.model.nextEnergyPointIn}}
+        .col-md-12
+          | Energy Regeneration time: {{tricker.model.energyIncrementLength}}
+
+    .col-md-3
+      .row
+        .col-md-12
+          | Hook Skill: {{tricker.model.hookSkill}}
 
   hr
 
@@ -31,17 +38,8 @@ div(ng-include='"components/navbar/navbar.html"')
     .col-md-2
       button.btn.btn-primary(ng-click='shortRun()') Short Run 10
 
-  hr
-
-  .row
     .col-md-2
       button.btn.btn-primary(ng-click='warmUp()') Warm Up 10
-
-  hr
-
-  .row
-    .col-md-12
-      | Hook Skill: {{tricker.model.hookSkill}}
 
   hr
 

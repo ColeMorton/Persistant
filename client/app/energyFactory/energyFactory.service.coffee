@@ -4,58 +4,60 @@ angular.module 'persistantApp'
 .service 'energyFactory', ($timeout) ->
   class Energy
 
-    # ENERGY_REGEN_TIME = 480
-    ENERGY_REGEN_TIME = 10
+    ENERGY_REGEN_TIME = 480
+    # ENERGY_REGEN_TIME = 10
     MINUTE = 60000
     SECOND = 1000
 
     mySecondTicker = null
 
-    constructor: (tricker) ->
-      @model = tricker
-      @model.energyIncrementLength = @getEnergyRegenTime()
-      @model.canSpendEnergy = canSpendEnergy
-      @model.spendEnergy = spendEnergy
-      @model.reduceEnergy = reduceEnergy
-      @addOfflineEnergy()
+    constructor: (@tricker) ->
+      @tricker.energyIncrementLength = getEnergyRegenTime @tricker
+      @tricker.addEnergy = addEnergy
+      @tricker.canSpendEnergy = canSpendEnergy
+      @tricker.spendEnergy = spendEnergy
+      @tricker.reduceEnergy = reduceEnergy
+
+      addOfflineEnergy @tricker
       @secondTicker()
 
     secondTicker: =>
-      @updateEnergyRegen()
+      updateFitnessDegen @tricker
       mySecondTicker = $timeout(@secondTicker, SECOND)
 
-    updateEnergyRegen: (nextPointDate) ->
-      if nextPointDate == undefined
-        nextPointDate = @getNextEnergyPointDate()
+    getNextEnergyPointDate = (tricker) ->
+      moment(tricker.energyModifiedDate).add(getEnergyRegenTime(tricker), 'seconds')
 
-      if (moment().isAfter(nextPointDate))
-        @model.totalEnergyGained += 1
-        @model.energyModifiedDate = nextPointDate
-
-        if @model.energy > @model.fitness
-          energyReduction = @model.energy - @model.fitness
-          @model.totalEnergyGained -= energyReduction
-
-        @model.updateEnergy()
-        @model.save()
-
-      else
-        @model.nextEnergyPointIn = parseInt(Math.abs(moment().diff(nextPointDate) / 1000))
-
-    addOfflineEnergy: ->
-      nextPointDate = @getNextEnergyPointDate()
-      while moment().isAfter(nextPointDate)
-        @updateEnergyRegen nextPointDate
-        nextPointDate = @getNextEnergyPointDate()
-      @model.updateEnergy()
-
-    getNextEnergyPointDate: ->
-      moment(@model.energyModifiedDate).add(@getEnergyRegenTime(), 'seconds')
-
-    getEnergyRegenTime: ->
-      pointInMinutes = ENERGY_REGEN_TIME / @model.fitness
+    getEnergyRegenTime = (tricker) ->
+      pointInMinutes = ENERGY_REGEN_TIME / tricker.fitness
       pointInSeconds = pointInMinutes * 60
       parseInt(pointInSeconds)
+
+    addOfflineEnergy = (tricker) ->
+      nextPointDate = getNextEnergyPointDate tricker
+      while moment().isAfter(nextPointDate)
+        tricker.addEnergy 1
+        tricker.energyModifiedDate = nextPointDate
+        nextPointDate = getNextEnergyPointDate tricker
+
+    updateFitnessDegen = (tricker) ->
+      nextPointDate = getNextEnergyPointDate tricker
+      if (moment().isAfter(nextPointDate))
+        tricker.addEnergy 1
+      else
+        tricker.nextEnergyPointIn = parseInt(Math.abs(moment().diff(nextPointDate) / 1000))
+
+    addEnergy = (energy) ->
+      nextPointDate = getNextEnergyPointDate this
+      this.totalEnergyGained += 1
+      this.energyModifiedDate = nextPointDate
+
+      if this.energy > this.fitness
+        energyReduction = this.energy - this.fitness
+        this.totalEnergyGained -= energyReduction
+
+      this.updateEnergy()
+      this.save()
 
     canSpendEnergy = (spend) ->
       this.energy > spend
@@ -76,5 +78,5 @@ angular.module 'persistantApp'
       this.updateEnergy()
       this.save()
 
-    isEnergyFull: ->
-      @model.energy >= @model.fitness
+    # isEnergyFull = ->
+    #   @model.energy >= @model.fitness

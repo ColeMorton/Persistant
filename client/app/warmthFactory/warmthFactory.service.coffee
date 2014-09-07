@@ -10,6 +10,17 @@ angular.module 'persistantApp'
 
     mySecondTicker = null
 
+    constructor: (@tricker) ->
+      @tricker.getWarmthAmountFromEnergy = getWarmthAmountFromEnergy
+      @tricker.addWarmth = addWarmth
+
+      subtractOfflineWarmth @tricker
+      @secondTicker()
+
+    secondTicker: =>
+      updateWarmthDegen @tricker
+      mySecondTicker = $timeout(@secondTicker, SECOND)
+
     updateWarmthDegen = (tricker, nextPointDate) ->
       if nextPointDate == undefined
         nextPointDate = getNextWarmthPointDate tricker
@@ -46,15 +57,3 @@ angular.module 'persistantApp'
 
     isWarmthEmpty = ->
       @model.warmth <= 0
-
-    constructor: (tricker) ->
-      @tricker = tricker
-      @tricker.getWarmthAmountFromEnergy = getWarmthAmountFromEnergy
-      @tricker.addWarmth = addWarmth
-
-      subtractOfflineWarmth tricker
-      @secondTicker()
-
-    secondTicker: =>
-      updateWarmthDegen @tricker
-      mySecondTicker = $timeout(@secondTicker, SECOND)
