@@ -75,7 +75,7 @@ angular.module 'persistantApp'
       result = (warmth + differculty) >= roll
       if result
         this.injuredDate = moment()
-        fitnessReduction = this.fitness * 0.8
+        fitnessReduction = parseInt(this.fitness * 0.8)
         this.removeFitness fitnessReduction
         this.save()
         console.log "You're injured!!"

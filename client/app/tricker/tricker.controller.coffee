@@ -19,8 +19,11 @@ angular.module 'persistantApp'
   $scope.warmUp = ->
     $scope.tricker.action.warmUp()
 
-  $scope.maxHook = ->
-    $scope.tricker.action.hook()
+  $scope.effectiveHook = ->
+    $scope.tricker.action.hook 1
+
+  $scope.stylishHook = ->
+    $scope.tricker.action.hook 2
 
   $scope.reset = ->
     $scope.tricker.model.reset()

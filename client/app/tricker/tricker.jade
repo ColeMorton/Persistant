@@ -28,24 +28,27 @@ div(ng-include='"components/navbar/navbar.html"')
 
   hr
 
+  //- .row
+  //-   .col-md-2
+  //-     button.btn.btn-primary(ng-click='longRun()') Long Run 100
+
+  //-   .col-md-2
+  //-     button.btn.btn-primary(ng-click='mediumRun()') Medium Run 50
+
+  //-   .col-md-2
+  //-     button.btn.btn-primary(ng-click='shortRun()') Short Run 10
+
+  //-   .col-md-2
+  //-     button.btn.btn-primary(ng-click='warmUp()') Warm Up 10
+
+  //- hr
+
   .row
     .col-md-2
-      button.btn.btn-primary(ng-click='longRun()') Long Run 100
+      button.btn.btn-primary(ng-click='effectiveHook()') Effective Hook {{ tricker.model.costHook }}
 
     .col-md-2
-      button.btn.btn-primary(ng-click='mediumRun()') Medium Run 50
-
-    .col-md-2
-      button.btn.btn-primary(ng-click='shortRun()') Short Run 10
-
-    .col-md-2
-      button.btn.btn-primary(ng-click='warmUp()') Warm Up 10
-
-  hr
-
-  .row
-    .col-md-2
-      button.btn.btn-primary(ng-click='maxHook()') Hook {{ tricker.model.costHook }}
+      button.btn.btn-primary(ng-click='stylishHook()') Stylish Hook {{ tricker.model.costHook }}
 
   hr
 

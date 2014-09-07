@@ -1,7 +1,7 @@
 'use strict'
 
 angular.module 'persistantApp'
-.service 'warmthFactory', ($timeout) ->
+.service 'warmthClass', ($timeout) ->
   class Warmth
 
     WARMTH_DEGEN_TIME = 30
