@@ -1,10 +1,10 @@
 'use strict'
 
 angular.module 'persistantApp'
-.controller 'TrickerCtrl', ($scope, $http, $timeout, trickerFactory) ->
+.controller 'TrickerCtrl', ($scope, $http, $timeout, trickerClass) ->
 
   $http.get('/api/trickers').success (trickers) ->
-    $scope.tricker = new trickerFactory trickers[0]
+    $scope.tricker = new trickerClass trickers[0]
     console.log trickers
 
   $scope.longRun = ->
@@ -20,13 +20,7 @@ angular.module 'persistantApp'
     $scope.tricker.action.warmUp()
 
   $scope.maxHook = ->
-    $scope.tricker.action.hook(100)
-
-  $scope.midHook = ->
-    $scope.tricker.action.hook(50)
-
-  $scope.minHook = ->
-    $scope.tricker.action.hook(20)
+    $scope.tricker.action.hook()
 
   $scope.reset = ->
     $scope.tricker.model.reset()

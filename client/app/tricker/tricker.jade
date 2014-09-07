@@ -45,13 +45,7 @@ div(ng-include='"components/navbar/navbar.html"')
 
   .row
     .col-md-2
-      button.btn.btn-primary(ng-click='maxHook()') Hook 100
-
-    .col-md-2
-      button.btn.btn-primary(ng-click='midHook()') Hook 50
-
-    .col-md-2
-      button.btn.btn-primary(ng-click='minHook()') Hook 10
+      button.btn.btn-primary(ng-click='maxHook()') Hook {{ tricker.model.costHook }}
 
   hr
 

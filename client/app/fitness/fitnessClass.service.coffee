@@ -1,7 +1,7 @@
 'use strict'
 
 angular.module 'persistantApp'
-.service 'fitnessFactory', ($timeout) ->
+.service 'fitnessClass', ($timeout) ->
   class Fitness
 
     FITNESS_DEGEN_TIME = 14400

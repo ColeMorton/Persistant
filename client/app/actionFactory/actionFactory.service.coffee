@@ -1,45 +1,43 @@
 'use strict'
 
 angular.module 'persistantApp'
-.service 'actionFactory', ->
+.service 'actionFactory', (energyClass, TRICK_TYPES) ->
   class Action
 
     HOOK_DIFFERCULTY = 200
 
-    trickSuccess = (model) ->
+    constructor: (@tricker) ->
+
+    trickSuccess = (tricker) ->
       console.log "Success!"
-      model.hookSkill += 5
-      model.addFitness 1
+      tricker.hookSkill += 5
+      tricker.addFitness 1
 
-    trickFailed = (model) ->
+    trickFailed = (tricker) ->
       console.log "Fail"
-      model.hookSkill += 1
-      model.getInjury HOOK_DIFFERCULTY
+      tricker.hookSkill += 1
+      tricker.getInjury HOOK_DIFFERCULTY
 
-    constructor: (tricker) ->
-      @model = tricker
-
-    run: (energyPercentage) ->
+    run: (energyPercentage) =>
       energyAmount = @getEnergyAmount energyPercentage
-      return if !@model.canSpendEnergy energyAmount
-      @model.spendEnergy energyAmount
-      @model.addFitness @getFitnessAddition energyAmount
+      return if !@tricker.canSpendEnergy energyAmount
+      @tricker.spendEnergy energyAmount
+      @tricker.addFitness @getFitnessAddition energyAmount
 
-    warmUp: ->
-      energyAmount = @getEnergyAmount 100, 10
-      return if !@model.canSpendEnergy energyAmount
-      @model.spendEnergy energyAmount
-      @model.addWarmth 40
+    warmUp: =>
+      energyAmount = @getEnergyAmount 100
+      return if !@tricker.canSpendEnergy energyAmount
+      @tricker.spendEnergy energyAmount
+      @tricker.addWarmth 40
 
-    hook: (energyPercentage) ->
-      energyAmount = @getEnergyAmount energyPercentage, 10
-      return if !@model.canSpendEnergy energyAmount
-      @model.spendEnergy energyAmount
-      result = @doTrick energyPercentage, @model.hookSkill
+    hook: =>
+      energyAmount = @getEnergyAmount 10
+      return if !@tricker.canSpendEnergy energyAmount
+      @tricker.spendEnergy energyAmount
+      result = @doTrick 10, @tricker.hookSkill
 
-    getEnergyAmount: (energyPercentage, maximum) ->
-      maximum = @model.energy - 1 if maximum == undefined
-      parseInt((energyPercentage / 100) * maximum)
+    getEnergyAmount: (energyPercentage) ->
+      parseInt((energyPercentage / 100) * 5)
 
     getFitnessAddition: (energyAmount) ->
       parseInt(energyAmount / 5)
@@ -50,5 +48,5 @@ angular.module 'persistantApp'
       chance = (energy / differculty) + skill
       roll = parseInt(Math.random() * 100)
       console.log 'Chance: ' + chance
-      if chance >= roll then trickSuccess(@model) else trickFailed(@model)
-      @model.save()
+      if chance >= roll then trickSuccess(@tricker) else trickFailed(@tricker)
+      @tricker.save()

@@ -1,7 +1,7 @@
 'use strict'
 
 angular.module 'persistantApp'
-.service 'energyFactory', ($timeout) ->
+.service 'energyClass', ($timeout) ->
   class Energy
 
     ENERGY_REGEN_TIME = 480
